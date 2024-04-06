@@ -1,29 +1,68 @@
-ion-content {
-    --background: #f4f5f8; /* Light background color */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
   }
-  
-  .login-container {
+
+  .card {
     background-color: #ffffff;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    animation: fadeInUp 0.5s ease;
-    max-width: 400px;
-    margin: auto;
+    width: 300px;
   }
-  
-  .links {
-    margin-top: 20px;
-    display: flex;
-    justify-content: space-between;
+
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
   }
-  
-  .links a {
-    color: var(--ion-color-primary);
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #cccccc;
+  }
+
+  button[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: #ffffff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  button[type="submit"]:hover {
+    background-color: #0056b3;
+  }
+
+  p {
+    margin-top: 15px;
+    text-align: center;
+  }
+
+  a {
+    color: #007bff;
     text-decoration: none;
   }
-  
-  .links a:hover {
+
+  a:hover {
     text-decoration: underline;
   }
-  
