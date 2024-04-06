@@ -1,0 +1,29 @@
+ion-content {
+    --background: #f4f5f8; /* Light background color */
+  }
+  
+  .login-container {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    animation: fadeInUp 0.5s ease;
+    max-width: 400px;
+    margin: auto;
+  }
+  
+  .links {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .links a {
+    color: var(--ion-color-primary);
+    text-decoration: none;
+  }
+  
+  .links a:hover {
+    text-decoration: underline;
+  }
+  
