@@ -15,6 +15,7 @@
       <ion-label position="floating">Email</ion-label>
       <ion-input type="email" [(ngModel)]="email"></ion-input>
     </ion-item>
+    
 
     <ion-item>
       <ion-label position="floating">Password</ion-label>
@@ -30,4 +31,7 @@
   <div class="ion-padding">
     <ion-button expand="block" (click)="Register()">Sign Up</ion-button>
   </div>
+
+  <p>Already have an account? <a routerLink="/login">sign-up</a></p>
+      <p>........................<a routerLink="/reset">reset</a></p>
 </ion-content>

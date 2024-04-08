@@ -19,32 +19,61 @@ export class SignUpPage implements OnInit {
     private db: AngularFirestore,
     private Auth: AngularFireAuth,
     private router: Router // Inject Router
+    ,private loadingController: LoadingController
   ) { }
 
   ngOnInit() {
   }
 
-  Register() {
+  async Register() {
+    if (this.name =='') 
+      {
+        alert("Enter your full name")
+        return;
+      }
+
+    if (this.email =='') 
+      {
+        alert("Enter email Address")
+        return;
+      }
+      if (this.password =='') 
+      {
+        alert("Enter password")
+        return;
+      }  
+  
     if (this.password !== this.confirm_password) {
       console.error('Passwords do not match');
       return;
     }
-
-    const userData = {
-      firstname: this.name,
-      email: this.email,
-      password: this.password,
-    };
+    const loader = await this.loadingController.create({
+      message: '|Registering you...',
+      cssClass: 'custom-loader-class'
+    });
+   
 
     this.Auth.createUserWithEmailAndPassword(this.email, this.password)
       .then((userCredential: any) => { // Explicitly specify type
         if (userCredential.user) {
-          this.db.collection('Users').add(userData)
+          this.db.collection('Users').add(
+            {
+              name:this.name,
+              email: this.email,
+             // role: this.role,
+            }
+          )
             .then(() => {
+              this.loadingController.dismiss();
+
+
               console.log('User data added successfully');
               this.router.navigate(['/login']); // Move navigate call inside then block
             })
+            
             .catch((error: any) => { // Explicitly specify type
+              this.loadingController.dismiss();
+
               console.error('Error adding user data:', error);
             });
         } else {
