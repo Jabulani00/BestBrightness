@@ -14,13 +14,13 @@
        
         <div class="form-group">
           <label for="email">Email</label>
-          <input type="email" id="email" placeholder="Enter your email">
+          <input type="email" [(ngModel)]="email" name="email" id="email" placeholder="Enter your email">
         </div>
         <div class="form-group">
           <label for="password">Password</label>
-          <input type="password" id="password" placeholder="Enter your password">
+          <input type="password" [(ngModel)]="password" name="password" id="password" placeholder="Enter your password">
         </div>
-        <button type="submit">LOGIN</button>
+        <button (click)="login()">LOGIN</button>
       </form>
       <p>Don't have an account? <a routerLink="/sign-up">sign-up</a></p>
       <p>........................<a routerLink="/reset">reset</a></p>

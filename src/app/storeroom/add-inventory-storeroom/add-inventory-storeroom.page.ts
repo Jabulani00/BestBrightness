@@ -6,11 +6,11 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-add-inventory',
-  templateUrl: './add-inventory.page.html',
-  styleUrls: ['./add-inventory.page.scss'],
+  selector: 'app-add-inventory-storeroom',
+  templateUrl: './add-inventory-storeroom.page.html',
+  styleUrls: ['./add-inventory-storeroom.page.scss'],
 })
-export class AddInventoryPage implements OnInit {
+export class AddInventoryStoreroomPage implements OnInit {
 
   itemName: string = '';
   itemCategory: string = '';
@@ -128,34 +128,28 @@ export class AddInventoryPage implements OnInit {
     
 
 
+}
 
-    
-  }
-
-
-
-
-
-  clearFields() {
-    this.itemName = '';
-    this.itemCategory = '';
-    this.itemDescription = '';
-    this.itemQuantity = 0;
-    this.pickersDetails = '';
-    this.dateOfPickup = '';
-    this.timeOfPickup = '';
-    this.barcode = '';
-    this.imageBase64 = null;
-    this.imageUrl = null;
-  }
+clearFields() {
+  this.itemName = '';
+  this.itemCategory = '';
+  this.itemDescription = '';
+  this.itemQuantity = 0;
+  this.pickersDetails = '';
+  this.dateOfPickup = '';
+  this.timeOfPickup = '';
+  this.barcode = '';
+  this.imageBase64 = null;
+  this.imageUrl = null;
+}
 
 
-  async presentToast(message: string) {
-    const toast = await this.ToastController.create({
-      message: message,
-      duration: 2000,
-      position: 'top'
-    });
-    toast.present();
-  }
+async presentToast(message: string) {
+  const toast = await this.ToastController.create({
+    message: message,
+    duration: 2000,
+    position: 'top'
+  });
+  toast.present();
+}
 }
