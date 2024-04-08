@@ -14,6 +14,7 @@ export class SignUpPage implements OnInit {
   email: any;
   password: any;
   confirm_password: any;
+  selectedRole:any;
 
   constructor(
     private db: AngularFirestore,
@@ -60,7 +61,8 @@ export class SignUpPage implements OnInit {
             {
               name:this.name,
               email: this.email,
-             // role: this.role,
+              status: "pending",
+              role : this.selectedRole,
             }
           )
             .then(() => {
