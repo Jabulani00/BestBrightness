@@ -42,7 +42,7 @@ password:any;
   .then(userCredential => { 
     this.loadingController.dismiss();
     const user = userCredential.user;
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(['/home']);
   })
   .catch((error) => {
     this.loadingController.dismiss();
