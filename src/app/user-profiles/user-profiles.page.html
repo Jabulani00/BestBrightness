@@ -14,7 +14,7 @@
         <h2>{{ user.name }}</h2>
         <p>Email: {{ user.email }}</p>
         <p>Role: {{ user.role }}</p>
-        <p [ngClass]="user.status === 'active' ? 'active' : 'denied'">Status: {{ user.status }}</p>
+        <p [ngClass]="{'active': user.status === 'active', 'denied': user.status === 'denied', 'pending': user.status === 'pending'}">Status: {{ user.status }}</p>
       </ion-label>
       <ion-button (click)="approveUser(user)" color="success" fill="outline" class="animate__animated animate__bounceIn">
         <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
