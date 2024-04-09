@@ -8,7 +8,7 @@ const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'welcome',
     pathMatch: 'full'
   },
   {
@@ -46,13 +46,18 @@ const routes: Routes = [
   {
     path: 'user-profiles',
     loadChildren: () => import('./user-profiles/user-profiles.module').then( m => m.UserProfilesPageModule)
-  },  {
+  },
+  {
     path: 'pickup',
     loadChildren: () => import('./pickup/pickup.module').then( m => m.PickupPageModule)
   },
   {
     path: 'delivery',
     loadChildren: () => import('./delivery/delivery.module').then( m => m.DeliveryPageModule)
+  },
+  {
+    path: 'welcome',
+    loadChildren: () => import('./welcome/welcome.module').then( m => m.WelcomePageModule)
   },
 
 
