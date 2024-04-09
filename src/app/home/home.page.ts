@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { NavController } from '@ionic/angular';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { ToastController } from '@ionic/angular';
-import { NavController } from '@ionic/angular';
+import { first } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
@@ -14,28 +14,29 @@ export class HomePage {
   userDocument: any;
 
   constructor(private navCtrl: NavController,
-              private router: Router,
               private auth: AngularFireAuth,
               private db: AngularFirestore,
               private toastController: ToastController) {}
 
   async getUser(): Promise<void> {
-    const user = await this.auth.currentUser;
+    try {
+      const user = await this.auth.currentUser;
 
-    if (user) {
-      try {
+      if (user) {
         const querySnapshot = await this.db
-          .collection('Users')
-          .ref.where('email', '==', user.email)
-          .get();
+          .collection('Users', ref => ref.where('email', '==', user.email))
+          .valueChanges({ idField: 'id' })
+          .pipe(first())
+          .toPromise();
 
-        if (!querySnapshot.empty) {
-          this.userDocument = querySnapshot.docs[0].data();
+        if (querySnapshot && querySnapshot.length > 0) {
+          this.userDocument = querySnapshot[0];
           console.log('User Document:', this.userDocument); // Log user document
         }
-      } catch (error) {
-        console.error('Error getting user document:', error);
       }
+    } catch (error) {
+      console.error('Error getting user document:', error);
+      throw error; // Rethrow error for better error handling
     }
   }
 
@@ -55,16 +56,13 @@ export class HomePage {
             message = 'Unauthorized user for picker page.';
             break;
           case 'delivery':
-            authorized = this.userDocument.role === 'Deliver';
+            authorized = this.userDocument.role === 'Delivery';
             message = 'Unauthorized user for delivery page.';
             break;
           case 'add-inventory':
-            authorized = this.userDocument.role === 'Manager';
-            message = 'Access denied to add inventory page.';
-            break;
           case 'update':
             authorized = this.userDocument.role === 'Manager';
-            message = 'Unauthorized user for updating page.';
+            message = 'Access denied for this page.';
             break;
           default:
             authorized = false;
@@ -77,7 +75,7 @@ export class HomePage {
         this.navCtrl.navigateForward('/' + page);
       } else {
         const toast = await this.toastController.create({
-          message: 'Unauthorized Access: You do not have the necessary permissions to access this page. Please contact the administrator for assistance.',
+          message: 'Unauthorized Access: ' + message,
           duration: 2000,
           position: 'top'
         });
@@ -85,6 +83,7 @@ export class HomePage {
       }
     } catch (error) {
       console.error('Error navigating based on role:', error);
+      throw error; // Rethrow error for better error handling
     }
   }
 

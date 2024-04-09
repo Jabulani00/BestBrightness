@@ -46,7 +46,15 @@ const routes: Routes = [
   {
     path: 'user-profiles',
     loadChildren: () => import('./user-profiles/user-profiles.module').then( m => m.UserProfilesPageModule)
+  },  {
+    path: 'pickup',
+    loadChildren: () => import('./pickup/pickup.module').then( m => m.PickupPageModule)
   },
+  {
+    path: 'delivery',
+    loadChildren: () => import('./delivery/delivery.module').then( m => m.DeliveryPageModule)
+  },
+
 
 ];
 
