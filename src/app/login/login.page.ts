@@ -60,7 +60,7 @@ password:any;
       window.alert("You are not allowed in the system");
     } else {
       this.loadingController.dismiss();
-      window.alert("User status unknown");
+      window.alert("You are not allowed in the system");
     }
   }
   

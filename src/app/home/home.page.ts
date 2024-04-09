@@ -49,27 +49,31 @@ export class HomePage {
 
       if (this.userDocument && this.userDocument.role) {
         console.log('User Role:', this.userDocument.role); // Log user role
-
+    
         switch (page) {
-          case 'pickup':
-            authorized = this.userDocument.role === 'picker';
-            message = 'Unauthorized user for picker page.';
-            break;
-          case 'delivery':
-            authorized = this.userDocument.role === 'Delivery';
-            message = 'Unauthorized user for delivery page.';
-            break;
-          case 'add-inventory':
-          case 'update':
-            authorized = this.userDocument.role === 'Manager';
-            message = 'Access denied for this page.';
-            break;
-          default:
-            authorized = false;
-            message = 'Invalid page.';
-            break;
+            case 'pickup':
+                authorized = this.userDocument.role === 'picker' || this.userDocument.role === 'Manager';
+                message = authorized ? 'Authorized user for picker page.' : 'Unauthorized user for picker page.';
+                break;
+            case 'delivery':
+                authorized = this.userDocument.role === 'Delivery' || this.userDocument.role === 'Manager';
+                message = authorized ? 'Authorized user for delivery page.' : 'Unauthorized user for delivery page.';
+                break;
+            case 'add-inventory':
+            case 'update':
+                authorized = this.userDocument.role === 'Manager';
+                message = authorized ? 'Authorized user for this page.' : 'Access denied for this page.';
+                break;
+            default:
+                authorized = false;
+                message = 'Invalid page.';
+                break;
         }
-      }
+    } else {
+        authorized = false;
+        message = 'User document or role not found.';
+    }
+    
 
       if (authorized) {
         this.navCtrl.navigateForward('/' + page);
