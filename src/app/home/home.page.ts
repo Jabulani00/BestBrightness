@@ -64,6 +64,10 @@ export class HomePage {
                 authorized = this.userDocument.role === 'Manager';
                 message = authorized ? 'Authorized user for this page.' : 'Access denied for this page.';
                 break;
+                case 'view':
+                authorized = this.userDocument.role === 'Manager';
+                message = authorized ? 'Authorized user for this page.' : 'Access denied for this page.';
+                break;
             default:
                 authorized = false;
                 message = 'Invalid page.';
@@ -105,5 +109,8 @@ export class HomePage {
 
   navigateToDeliverInventory(): Promise<void> {
     return this.navigateBasedOnRole('delivery');
+  }
+  navigateToStoreInventory(): Promise<void> {
+    return this.navigateBasedOnRole('view');
   }
 }

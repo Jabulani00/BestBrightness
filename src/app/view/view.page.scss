@@ -1,0 +1,68 @@
+ion-header {
+    ion-toolbar {
+      --background: #c24d2c; 
+      color:#fff;
+    }
+  }
+  ion-segment {
+    --background: #c24d2c;
+    font-weight: bold;
+  }
+
+ /* General Styles */
+ion-content {
+    --background: #f7f7f7;
+    --ion-font-family: 'Poppins', sans-serif;
+  }
+  
+
+  /* Inventory Item Styles */
+  .inventory-item {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 16px;
+    padding: 16px;
+    transition: transform 0.3s ease;
+  }
+  
+  .inventory-item:hover {
+    transform: translateY(-4px);
+  }
+  
+  .inventory-item h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333333;
+    margin-bottom: 8px;
+  }
+  
+  .inventory-item p {
+    font-size: 14px;
+    color: #666666;
+    margin-bottom: 4px;
+  }
+  
+  .thumbnail {
+    width: 100%;
+    max-width: 250px;
+    height: auto;
+    border-radius: 8px;
+    margin-top: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Responsive Styles */
+  @media (min-width: 768px) {
+    .inventory-item {
+      display: flex;
+      align-items: center;
+    }
+  
+    .inventory-item .thumbnail {
+      margin-left: 16px;
+      margin-top: 0;
+    }
+  }
+  
+  
