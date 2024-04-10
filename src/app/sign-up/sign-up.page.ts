@@ -54,7 +54,8 @@ export class SignUpPage implements OnInit {
       cssClass: 'custom-loader-class'
     });
    
-
+     
+    await loader.present();
     this.Auth.createUserWithEmailAndPassword(this.email, this.password)
       .then((userCredential: any) => { // Explicitly specify type
         if (userCredential.user) {
@@ -67,7 +68,7 @@ export class SignUpPage implements OnInit {
             }
           )
             .then(() => {
-              this.loadingController.dismiss();
+              loader.dismiss();
 
 
               console.log('User data added successfully');
@@ -75,7 +76,7 @@ export class SignUpPage implements OnInit {
             })
             
             .catch((error: any) => { // Explicitly specify type
-              this.loadingController.dismiss();
+              loader.dismiss();
 
               console.error('Error adding user data:', error);
             });

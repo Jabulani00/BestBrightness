@@ -4,6 +4,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { finalize } from 'rxjs/operators';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
+import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
 
 @Component({
   selector: 'app-add-inventory-storeroom',
@@ -23,6 +24,11 @@ export class AddInventoryStoreroomPage implements OnInit {
   imageBase64: any;
   imageUrl: string | null = null;
   cart: any[] = []; 
+  toggleChecked: boolean = false; 
+
+
+
+
   constructor(
     private firestore: AngularFirestore,
     private storage: AngularFireStorage,
@@ -54,6 +60,32 @@ export class AddInventoryStoreroomPage implements OnInit {
     return snapshot.ref.getDownloadURL();
   }
   
+
+  async scanBarcode(){
+    await BarcodeScanner.checkPermission({ force: true });
+  
+    // make background of WebView transparent
+    // note: if you are using ionic this might not be enough, check below
+    BarcodeScanner.hideBackground();
+    
+    const result = await BarcodeScanner.startScan(); // start scanning and wait for a result
+  
+    // if the result has content
+    if (result.hasContent) {
+      this.barcode = result.content;
+      console.log(result.content); // log the raw scanned content
+    }
+  }
+  
+  toggleMode() {
+    if (this.toggleChecked) {
+      this.barcode = ''; // Clear the barcode value when switching to input mode
+    }
+  }
+  
+
+
+
   async addItem() {
     const loader = await this.loadingController.create({
       message: 'Adding Inventory...',
@@ -76,10 +108,11 @@ export class AddInventoryStoreroomPage implements OnInit {
         timeOfPickup: this.timeOfPickup,
         barcode: this.barcode || '',
         timestamp: new Date(),
+        location:"storeroom"
       };
       this.cart.push(newItem);
       this.presentToast('Item added to cart');
-      await this.firestore.collection('inventory').add(newItem);
+      await this.firestore.collection('storeroomInventory').add(newItem);
       this.clearFields();
     } catch (error) {
       console.error('Error adding inventory:', error);

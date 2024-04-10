@@ -46,6 +46,7 @@ export class LoginPage implements OnInit {
       message: '|Logging in...',
       cssClass: 'custom-loader-class'
     });
+   
     await loader.present();
 
     // Query Firestore to find the document with the matching email

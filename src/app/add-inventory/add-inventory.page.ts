@@ -4,6 +4,8 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { finalize } from 'rxjs/operators';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
+import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
+
 
 @Component({
   selector: 'app-add-inventory',
@@ -15,7 +17,7 @@ export class AddInventoryPage implements OnInit {
   itemName: string = '';
   itemCategory: string = '';
   itemDescription: string = '';
-  itemQuantity: number = 0;
+  itemQuantity = 0;
   pickersDetails: string = '';
   dateOfPickup: string = '';
   timeOfPickup: string = '';
@@ -23,6 +25,13 @@ export class AddInventoryPage implements OnInit {
   imageBase64: any;
   imageUrl: string | null = null;
   cart: any[] = []; 
+  qrCodeIdentifire:any;
+
+
+ // Variable to hold the barcode value
+ toggleChecked: boolean = false; 
+
+
   constructor(
     private firestore: AngularFirestore,
     private storage: AngularFireStorage,
@@ -54,7 +63,30 @@ export class AddInventoryPage implements OnInit {
     return snapshot.ref.getDownloadURL();
   }
   
+  async scanBarcode(){
+  await BarcodeScanner.checkPermission({ force: true });
+
+  // make background of WebView transparent
+  // note: if you are using ionic this might not be enough, check below
+  BarcodeScanner.hideBackground();
+  
+  const result = await BarcodeScanner.startScan(); // start scanning and wait for a result
+
+  // if the result has content
+  if (result.hasContent) {
+    this.barcode = result.content;
+    console.log(result.content); // log the raw scanned content
+  }
+}
+
+toggleMode() {
+  if (this.toggleChecked) {
+    this.barcode = ''; // Clear the barcode value when switching to input mode
+  }
+}
+
   async addItem() {
+    let itemQuantity=0;
     const loader = await this.loadingController.create({
       message: 'Adding Inventory...',
     });
@@ -64,6 +96,53 @@ export class AddInventoryPage implements OnInit {
       if (this.imageBase64) {
         this.imageUrl = await this.uploadImage(this.imageBase64);
       }
+      const userEmail = await this.firestore.collection('Users').ref.where('email', '==', this.pickersDetails).get();
+   console.log(userEmail)
+      if (userEmail.empty) {
+        this.presentToast("this delivery guy is not no our system");
+        console.log("this delivary guy is not no our system");
+        return;
+      }
+
+
+  // Check if there is an existing item with the same barcode in the storeroomInventory collection
+  const existingItemQuery = await this.firestore.collection('storeroomInventory').ref.where('barcode', '==', this.barcode).get();
+  if (!existingItemQuery.empty) {
+   // Update the quantity of the existing item in the storeroomInventory collection
+    const existingItemDoc = existingItemQuery.docs[0];
+    const existingItemData: any = existingItemDoc.data();
+    if (existingItemData.quantity < this.itemQuantity) {
+      // Show an alert if the stock is insufficient
+     this.presentToast('Insufficient Stock, The stock for this item is insufficient. the are '+existingItemData.quantity+' available');
+      return;
+  }
+    const updatedQuantity = existingItemData.quantity - this.itemQuantity;
+    console.log(existingItemData.quantity);
+    console.log( updatedQuantity);
+    itemQuantity = existingItemData.quantity;
+
+    await existingItemDoc.ref.update({ quantity: updatedQuantity });
+    console.log("Storeroom Inventory Updated (Minused)")
+   
+  } else{
+    this.presentToast("this product barcode does  not metch any on our storeroom")
+    return;
+  }
+///////////////////////////////////////
+// Check if there's an existing item with the same name in the inventory collection
+const existingItemQueryStore = await this.firestore.collection('inventory').ref.where('barcode', '==', this.barcode).get();
+if (!existingItemQueryStore.empty) {
+ // Update the quantity of the existing item in the storeroomInventory collection
+  const existingItemDoc = existingItemQuery.docs[0];
+  const existingItemData: any = existingItemDoc.data();
+  const updatedQuantity = existingItemData.quantity + this.itemQuantity;
+  this.itemQuantity += updatedQuantity
+  await existingItemDoc.ref.update({ quantity: updatedQuantity });
+  console.log("Storeroom Inventory Updated (Plused)");
+  return
+ 
+} 
+
 
       const newItem = {
         name: this.itemName,

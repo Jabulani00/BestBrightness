@@ -1,6 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Add Inventory Store</ion-title>
+    <ion-title >Add Inventory Store</ion-title>
+    <ion-icon routerLink="/home" slot="end" name="arrow-back-outline"></ion-icon>
   </ion-toolbar>
 </ion-header>
 
@@ -10,14 +11,40 @@
       Add Inventory Item
     </ion-card-header>
     <ion-card-content>
+      <!-- <ion-item>
+        <ion-label position="floating">Barcode (Optional)</ion-label>
+        <ion-input type="text" [(ngModel)]="barcode"></ion-input>
+      </ion-item> -->
+      <ion-item>
+
+        <ion-toggle labelPlacement="end" [(ngModel)]="toggleChecked">Type barcode</ion-toggle>
+      </ion-item>
+
+
+      <ion-item>
+        <ion-label position="floating">Barcode</ion-label>
+        <ion-input type="text" [(ngModel)]="barcode" *ngIf="toggleChecked"></ion-input>
+        <ion-button  expand="block" (click)="scanBarcode()" *ngIf="!toggleChecked">
+          <ion-icon name="barcode-outline"></ion-icon> Scan
+        </ion-button>
+      </ion-item>
+
       <ion-item>
         <ion-label position="floating">Item Name</ion-label>
         <ion-input type="text" [(ngModel)]="itemName"></ion-input>
       </ion-item>
+    
       <ion-item>
-        <ion-label position="floating">Category</ion-label>
-        <ion-input type="text" [(ngModel)]="itemCategory"></ion-input>
+        <ion-label>Category</ion-label>
+        <ion-select [(ngModel)]="itemCategory">
+          <ion-select-option value="Cleaning Detergents">Cleaning Detergents</ion-select-option>
+          <ion-select-option value="Plastics">Plastics</ion-select-option>
+          <ion-select-option value="Cleaning Equipment">Cleaning Equipment</ion-select-option> 
+        </ion-select>
       </ion-item>
+
+
+
       <ion-item>
         <ion-label position="floating">Description</ion-label>
         <ion-textarea [(ngModel)]="itemDescription"></ion-textarea>
@@ -27,27 +54,30 @@
         <ion-input type="number" [(ngModel)]="itemQuantity"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Picker's Details</ion-label>
+        <ion-label position="floating">Picker Email</ion-label>
         <ion-input type="text" [(ngModel)]="pickersDetails"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Date of Pickup</ion-label>
+        <ion-label position="fixed">Date of Pickup</ion-label>
         <ion-input type="date" [(ngModel)]="dateOfPickup"></ion-input>
       </ion-item>
       <ion-item>
         <ion-label position="floating">Time of Pickup</ion-label>
         <ion-input type="time" [(ngModel)]="timeOfPickup"></ion-input>
       </ion-item>
-      <ion-item>
-        <ion-label position="floating">Barcode (Optional)</ion-label>
-        <ion-input type="text" [(ngModel)]="barcode"></ion-input>
-      </ion-item>
-      <button id="fileInput" class="custom-file-input" (click)="takePicture()">
+    
+      <ion-button  expand="block" id="fileInput" color="medium" class="custom-file-input" (click)="takePicture()">
         <ion-icon name="camera"></ion-icon>
         Take Picture
-      </button>
+      </ion-button >
+
+
+
       <ion-button expand="block" (click)="addItem()">Add Item</ion-button>
-      <ion-button expand="block" (click)="generateSlip()">DONE</ion-button>
+      <ion-button expand="block"  color="success" (click)="generateSlip()">DONE</ion-button>
     </ion-card-content>
   </ion-card>
+
+
+
 </ion-content>
