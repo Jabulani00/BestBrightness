@@ -1,13 +1,20 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>analytics</ion-title>
+    <ion-icon routerLink="/home" slot="end" name="arrow-back-outline"></ion-icon>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
- 
+  <div class="scroll-container">
     <div class="chart-container">
+      <p>Store Inventory</p>
       <canvas id="quantityByCategoryChart"></canvas>
     </div>
-  
+
+    <div class="chart-container">
+      <p>StoreRoom Inventory</p>
+      <canvas id="quantityByCategoryStorommChart"></canvas>
+    </div>
+  </div>
 </ion-content>

@@ -55,7 +55,7 @@ export class HomePage {
                 authorized = this.userDocument.role === 'picker' || this.userDocument.role === 'Manager';
                 message = authorized ? 'Authorized user for picker page.' : 'Unauthorized user for picker page.';
                 break;
-            case 'delivery':
+            case 'analytics':
                 authorized = this.userDocument.role === 'Delivery' || this.userDocument.role === 'Manager';
                 message = authorized ? 'Authorized user for delivery page.' : 'Unauthorized user for delivery page.';
                 break;
@@ -108,7 +108,7 @@ export class HomePage {
   }
 
   navigateToDeliverInventory(): Promise<void> {
-    return this.navigateBasedOnRole('delivery');
+    return this.navigateBasedOnRole('analytics');
   }
   navigateToStoreInventory(): Promise<void> {
     return this.navigateBasedOnRole('view');
