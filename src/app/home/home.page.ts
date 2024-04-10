@@ -1,5 +1,9 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { NavController } from '@ionic/angular';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
+import { ToastController } from '@ionic/angular';
+import { first } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
@@ -7,22 +11,99 @@ import { Router } from '@angular/router';
   styleUrls: ['home.page.scss'],
 })
 export class HomePage {
+  userDocument: any;
 
-  constructor(private router: Router) {}
-  navigateToAddInventory() {
-    this.router.navigate(['/add-inventory']);
+  constructor(private navCtrl: NavController,
+              private auth: AngularFireAuth,
+              private db: AngularFirestore,
+              private toastController: ToastController) {}
+
+  async getUser(): Promise<void> {
+    try {
+      const user = await this.auth.currentUser;
+
+      if (user) {
+        const querySnapshot = await this.db
+          .collection('Users', ref => ref.where('email', '==', user.email))
+          .valueChanges({ idField: 'id' })
+          .pipe(first())
+          .toPromise();
+
+        if (querySnapshot && querySnapshot.length > 0) {
+          this.userDocument = querySnapshot[0];
+          console.log('User Document:', this.userDocument); // Log user document
+        }
+      }
+    } catch (error) {
+      console.error('Error getting user document:', error);
+      throw error; // Rethrow error for better error handling
+    }
   }
 
-  navigateToUpdateInventory() {
-    this.router.navigate(['/update-inventory']);
+  async navigateBasedOnRole(page: string): Promise<void> {
+    try {
+      await this.getUser();
+
+      let authorized = false;
+      let message = '';
+
+      if (this.userDocument && this.userDocument.role) {
+        console.log('User Role:', this.userDocument.role); // Log user role
+    
+        switch (page) {
+            case 'pickup':
+                authorized = this.userDocument.role === 'picker' || this.userDocument.role === 'Manager';
+                message = authorized ? 'Authorized user for picker page.' : 'Unauthorized user for picker page.';
+                break;
+            case 'delivery':
+                authorized = this.userDocument.role === 'Delivery' || this.userDocument.role === 'Manager';
+                message = authorized ? 'Authorized user for delivery page.' : 'Unauthorized user for delivery page.';
+                break;
+            case 'add-inventory':
+            case 'update':
+                authorized = this.userDocument.role === 'Manager';
+                message = authorized ? 'Authorized user for this page.' : 'Access denied for this page.';
+                break;
+            default:
+                authorized = false;
+                message = 'Invalid page.';
+                break;
+        }
+    } else {
+        authorized = false;
+        message = 'User document or role not found.';
+    }
+    
+
+      if (authorized) {
+        this.navCtrl.navigateForward('/' + page);
+      } else {
+        const toast = await this.toastController.create({
+          message: 'Unauthorized Access: ' + message,
+          duration: 2000,
+          position: 'top'
+        });
+        toast.present();
+      }
+    } catch (error) {
+      console.error('Error navigating based on role:', error);
+      throw error; // Rethrow error for better error handling
+    }
   }
 
-  navigateToPickupInventory() {
-    this.router.navigate(['/pickup-inventory']);
+  navigateToAddInventory(): Promise<void> {
+    return this.navigateBasedOnRole('add-inventory');
   }
 
-  navigateToDeliverInventory() {
-    this.router.navigate(['/deliver-inventory']);
+  navigateToUpdateInventory(): Promise<void> {
+    return this.navigateBasedOnRole('update');
   }
 
+  navigateToPickupInventory(): Promise<void> {
+    return this.navigateBasedOnRole('pickup');
+  }
+
+  navigateToDeliverInventory(): Promise<void> {
+    return this.navigateBasedOnRole('delivery');
+  }
 }

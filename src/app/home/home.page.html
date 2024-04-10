@@ -6,57 +6,38 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <ion-grid fixed>
-    <ion-row>
-      <ion-col size="12" size-md="6" size-lg="3">
-        <ion-card class="add" (click)="navigateToAddInventory()">
-          <ion-card-header>
-            <ion-card-title>
-              Add Inventory
-            </ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-icon name="cube-outline"></ion-icon>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      <ion-col size="12" size-md="6" size-lg="3">
-        <ion-card  class="update" (click)="navigateToUpdateInventory()">
-          <ion-card-header>
-            <ion-card-title>
-              Update Inventory
-            </ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-icon name="sync-outline"></ion-icon>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      <ion-col  size="12" size-md="6" size-lg="3">
-        <ion-card class="pickup" (click)="navigateToPickupInventory()">
-          <ion-card-header>
-            <ion-card-title>
-              Pickup Inventory
-            </ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-icon name="car-outline"></ion-icon>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      <ion-col size="12" size-md="6" size-lg="3">
-        <ion-card  class="deliver" (click)="navigateToDeliverInventory()">
-          <ion-card-header>
-            <ion-card-title>
-              Deliver Inventory
-            </ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-icon name="close-circle-outline"></ion-icon>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+<ion-content class="ion-padding" style="--background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('assets/v.jpg') no-repeat center / cover; height: 100vh; display: flex; align-items: center; justify-content: center;">
+  
+
+  <div class="grid-container">
+    <ion-card (click)="navigateToAddInventory()" class="menu-card self-improvement">
+      <ion-img src="assets/add.jpg"></ion-img>
+      <ion-card-header>
+        Add Inventory
+      </ion-card-header>
+    </ion-card>
+
+    <ion-card (click)="navigateToUpdateInventory()" class="menu-card business-ideas">
+      <ion-img src="assets/update.jpg"></ion-img>
+      <ion-card-header>
+        Update Inventory
+      </ion-card-header>
+    </ion-card>
+
+    <ion-card (click)="navigateToPickupInventory()" class="menu-card business-ideas">
+      <ion-img src="assets/pick.jpg"></ion-img>
+      <ion-card-header>
+        Pickup Inventory
+      </ion-card-header>
+    </ion-card>
+
+    <ion-card (click)="navigateToDeliverInventory()" class="menu-card business-ideas">
+      <ion-img src="assets/del.jpg"></ion-img>
+      <ion-card-header>
+        Deliver Inventory
+      </ion-card-header>
+    </ion-card>
+
+    
+  </div>
 </ion-content>
