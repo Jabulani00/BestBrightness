@@ -32,7 +32,7 @@
               }
             ],
             "styles": ["src/global.scss", "src/theme/variables.scss"],
-            "scripts": ["node_modules/chart.js/dist/Chart.min.js"]
+           
           },
           "configurations": {
             "production": {
