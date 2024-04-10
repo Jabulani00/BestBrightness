@@ -66,6 +66,10 @@ const routes: Routes = [
     path: 'view',
     loadChildren: () => import('./view/view.module').then( m => m.ViewPageModule)
   },
+  {
+    path: 'storeroom',
+    loadChildren: () => import('./storeroom/storeroom.module').then( m => m.StoreroomPageModule)
+  },
 
 
 
