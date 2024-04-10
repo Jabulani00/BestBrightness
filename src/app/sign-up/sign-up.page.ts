@@ -3,6 +3,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Router } from '@angular/router'; // Import Router
 import { LoadingController, NavController, ToastController, AlertController } from '@ionic/angular';
+import { ProfilePage } from '../profile/profile.page';
 
 @Component({
   selector: 'app-sign-up',
@@ -70,7 +71,7 @@ export class SignUpPage implements OnInit {
 
 
               console.log('User data added successfully');
-              this.router.navigate(['/login']); // Move navigate call inside then block
+              this.router.navigate(['/profile']);
             })
             
             .catch((error: any) => { // Explicitly specify type
