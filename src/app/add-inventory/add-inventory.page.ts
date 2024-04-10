@@ -37,7 +37,6 @@ export class AddInventoryPage implements OnInit {
     private storage: AngularFireStorage,
     private loadingController: LoadingController,
    private  ToastController: ToastController,  private alertController: AlertController,
-  
   ) {}
 
   ngOnInit() {

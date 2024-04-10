@@ -2,7 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { finalize } from 'rxjs/operators';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
+import { LoadingController, NavController, ToastController } from '@ionic/angular';
+
 
 @Component({
   selector: 'app-update',
@@ -10,78 +14,93 @@ import { ActivatedRoute } from '@angular/router';
   styleUrls: ['./update.page.scss'],
 })
 export class UpdatePage implements OnInit {
-
- 
-  itemId!: string; // Variable to hold the ID of the inventory item
+  barcode!: string; // Variable to hold the ID of the inventory item
   itemName: string = '';
   itemCategory: string = '';
   itemDescription: string = '';
   itemQuantity: number = 0;
   selectedFile: File | null = null;
-  
+  productInfor: any;
+  imageBase64: any;
+  toggleChecked: boolean = false;
+  imageUrl: any;
+  imageInfor:any;
+  newImage :any;
+
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private firestore: AngularFirestore,
-    private storage: AngularFireStorage
+    private fireStorage: AngularFireStorage
   ) {}
 
   ngOnInit() {
+    this.getPassedData();
     // Get the item ID from route parameters
-    this.route.params.subscribe(params => {
-      this.itemId = params['id'];
-      // Fetch the item details from Firestore using the item ID
-      this.firestore.collection('inventory').doc(this.itemId).get().toPromise()
-        .then(doc => {
-          if (doc && doc.exists) {
-            const data: any = doc.data();
-            this.itemName = data.name;
-            this.itemCategory = data.category;
-            this.itemDescription = data.description;
-            this.itemQuantity = data.quantity;
-          } else {
-            console.log('No such document!');
-          }
-        })
-        .catch(error => {
-          console.log('Error getting document:', error);
-        });
-    });
   }
-  
+
+  async scanBarcode() {
+    await BarcodeScanner.checkPermission({ force: true });
+    // make background of WebView transparent
+    // note: if you are using ionic this might not be enough, check below
+    BarcodeScanner.hideBackground();
+    const result = await BarcodeScanner.startScan(); // start scanning and wait for a result
+    // if the result has content
+    if (result.hasContent) {
+      this.barcode = result.content;
+      console.log(result.content); // log the raw scanned content
+    }
+  }
+
+  async deleteFileIfExists(url: string): Promise<void> {
+    if (url) {
+      try {
+        const fileRef = this.fireStorage.storage.refFromURL(url);
+        await fileRef.delete();
+      } catch (error) {
+        console.error('Error deleting file:', error);
+      }
+    }
+  }
   async updateItem() {
-    if (this.selectedFile) {
-      const filePath = 'images/' + this.selectedFile.name;
-      const fileRef = this.storage.ref(filePath);
-      const uploadTask = this.storage.upload(filePath, this.selectedFile);
 
-      // Get download URL from observable and add timestamp
-      uploadTask.snapshotChanges().pipe(
-        finalize(async () => {
-          const downloadURL = await fileRef.getDownloadURL().toPromise(); // Convert Observable to Promise
 
-          // Update item details in Firestore
-          await this.firestore.collection('inventory').doc(this.itemId).update({
-            name: this.itemName,
-            category: this.itemCategory,
-            description: this.itemDescription,
-            imageUrl: downloadURL,
-            quantity: this.itemQuantity,
-            timestamp: new Date(), // Add timestamp
-          });
-        })
-      ).subscribe();
-    } else {
-      // Update item details in Firestore without updating the image
-      await this.firestore.collection('inventory').doc(this.itemId).update({
+if(this.imageBase64){
+  await this.deleteFileIfExists.call(this, this.productInfor.imageUrl);
+  this.imageUrl = await this.uploadImage(this.imageBase64);
+}
+
+
+   
+    // Check if there's an existing item with the same name in the inventory collection
+    const existingItemQueryStore = await this.firestore
+      .collection('inventory')
+      .ref.where('barcode', '==', this.barcode)
+      .get();
+    if (!existingItemQueryStore.empty) {
+      // Update the quantity of the existing item in the storeroomInventory collection
+      const existingItemDoc = existingItemQueryStore.docs[0];
+      const existingItemData: any = existingItemDoc.data();
+      await existingItemDoc.ref.update({
         name: this.itemName,
         category: this.itemCategory,
         description: this.itemDescription,
+        barcode:this.barcode,
         quantity: this.itemQuantity,
-        timestamp: new Date(), // Add timestamp
+        timestamp: new Date(), 
+        imageUrl: this.imageUrl
+      
+        // Add timestamp });
+        //console.log("Storeroom Inventory Updated (Plused)");
       });
     }
   }
 
+  toggleMode() {
+    if (this.toggleChecked) {
+      this.barcode = ''; // Clear the barcode value when switching to input mode
+    }
+  }
   clearFields() {
     this.itemName = '';
     this.itemCategory = '';
@@ -97,4 +116,39 @@ export class UpdatePage implements OnInit {
     }
   }
 
+  async takePicture() {
+    const image = await Camera.getPhoto({
+      quality: 90,
+      allowEditing: false,
+      resultType: CameraResultType.Base64,
+      source: CameraSource.Camera,
+    });
+    this.imageBase64 = image.base64String;
+    this.newImage = `data:image/jpeg;base64,${image.base64String}`;
+  }
+
+  async uploadImage(file: string) {
+    const fileName = Date.now().toString();
+    const filePath = `images/${fileName}`;
+    const fileRef = this.fireStorage.ref(filePath);
+    const uploadTask = fileRef.putString(file, 'base64', {
+      contentType: 'image/jpeg',
+    });
+    const snapshot = await uploadTask;
+    return snapshot.ref.getDownloadURL();
+  }
+
+  async getPassedData() {
+    if (this.router.getCurrentNavigation()?.extras.state) {
+      this.productInfor = await this.router.getCurrentNavigation()?.extras.state;
+      console.log(this.productInfor);
+      this.barcode = this.productInfor.barcode; // Variable to hold the ID of the inventory item
+      this.itemName = this.productInfor.name;
+      this.itemCategory = this.productInfor.category;
+      this.itemDescription = this.productInfor.description;
+      this.itemQuantity = this.productInfor.quantity;
+      this.newImage = this.productInfor.imageUrl;
+    
+    }
+  }
 }

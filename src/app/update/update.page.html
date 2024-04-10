@@ -1,11 +1,26 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>Update Inventory</ion-title>
+    <ion-icon routerLink="/view" slot="end" name="arrow-back-outline"></ion-icon>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <ion-grid>
+    <ion-item>
+      <ion-toggle labelPlacement="end" [(ngModel)]="toggleChecked">Type barcode</ion-toggle>
+    </ion-item>
+
+
+    <ion-item>
+      <ion-label position="floating">Barcode</ion-label>
+      <ion-input type="text" [(ngModel)]="barcode" *ngIf="toggleChecked"></ion-input>
+      <ion-button  expand="block" (click)="scanBarcode()" *ngIf="!toggleChecked">
+        <ion-icon name="barcode-outline"></ion-icon> Scan
+      </ion-button>
+    </ion-item>
+
+
     <ion-row>
       <ion-col size="12">
         <ion-item>
@@ -45,11 +60,17 @@
     <ion-row>
       <ion-col size="12">
         <ion-item>
-          <ion-label>Upload Image</ion-label>
-          <input type="file" (change)="onFileSelected($event)" accept="image/*">
+          <img class="thumbnail" src="{{newImage}}" alt="{{  itemName }} ">
         </ion-item>
       </ion-col>
     </ion-row>
+
+
+    <ion-button  expand="block" id="fileInput" color="medium" class="custom-file-input" (click)="takePicture()">
+      <ion-icon name="camera"></ion-icon>
+      Take Picture
+    </ion-button >
+
 
     <ion-row>
       <ion-col size="12">
