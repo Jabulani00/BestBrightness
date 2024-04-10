@@ -1,3 +1,0 @@
-1. npm install @capacitor/camera  
-2. npm install @ionic/pwa-elements  //to open camera on the browser for testing
-3.
