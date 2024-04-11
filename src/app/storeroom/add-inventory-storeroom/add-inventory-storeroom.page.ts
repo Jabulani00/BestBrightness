@@ -5,6 +5,9 @@ import { finalize } from 'rxjs/operators';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
+import * as pdfFonts from 'pdfmake/build/vfs_fonts';
+const pdfMake = require('pdfmake/build/pdfmake.js');
+
 
 @Component({
   selector: 'app-add-inventory-storeroom',
@@ -145,8 +148,89 @@ export class AddInventoryStoreroomPage implements OnInit {
         })),
       };
       await this.firestore.collection('slips').add(slipData);
-  
+      pdfMake.vfs = pdfFonts.pdfMake.vfs;
+     // Calculate column widths based on content length
+
+
+// Define PDF content
+// Define PDF content
+// Define PDF content
+const docDefinition = {
+  content: [
+      {
+          text: 'BEST BRIGHT', // Adding the company name to the header
+          style: 'companyName'
+      },
+      {
+          text: 'Invoice',
+          style: 'header'
+      },
+      {
+          text: `Date: ${new Date().toLocaleDateString()}`,
+          style: 'subheader'
+      },
+      {
+          table: {
+              headerRows: 1,
+              widths: [ '*', '*', '*', '*', '*', '*' ],
+              body: [
+                  [
+                      { text: 'Name', style: 'tableHeader' },
+                      { text: 'Category', style: 'tableHeader' },
+                      { text: 'Description', style: 'tableHeader' },
+                      { text: 'Quantity', style: 'tableHeader' },
+                      { text: 'Picker\'s Details', style: 'tableHeader' },
+                      { text: 'Barcode', style: 'tableHeader' }
+                  ],
+                  ...this.cart.map(item => [
+                      item.name,
+                      item.category,
+                      item.description,
+                      item.quantity.toString(),
+                      item.pickersDetails,
+                      item.barcode
+                  ])
+              ]
+          }
+      }
+  ],
+  styles: {
+      header: {
+          fontSize: 24,
+          bold: true,
+          margin: [0, 0, 0, 10],
+          alignment: 'center',
+          color: '#007bff' // Blue color for the header
+      },
+      subheader: {
+          fontSize: 14,
+          bold: true,
+          margin: [0, 10, 0, 10]
+      },
+      tableHeader: {
+          bold: true,
+          fontSize: 12,
+          color: 'black',
+          alignment: 'center'
+      },
+      companyName: { // Style for the company name
+          fontSize: 28,
+          bold: true,
+          margin: [0, 0, 0, 20], // Adjust margin to separate company name from header
+          alignment: 'center',
+          color: '#dc3545' // Red color for the company name
+      }
+  }
+};
+
+
+
+
+    // Generate PDF
+    //pdfMake.createPdf(docDefinition).open();
+    const pdfDocGenerator = await pdfMake.createPdf(docDefinition);
       // Clear the cart after generating the slip
+      pdfDocGenerator.open();
       this.cart = [];
   
       // Show success toast notification
