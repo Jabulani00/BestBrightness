@@ -40,6 +40,7 @@ export class UpdatePage implements OnInit {
   }
 
   async scanBarcode() {
+    document.querySelector('body')?.classList.add('scanner-active');
     await BarcodeScanner.checkPermission({ force: true });
     // make background of WebView transparent
     // note: if you are using ionic this might not be enough, check below
