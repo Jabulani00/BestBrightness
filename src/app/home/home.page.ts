@@ -51,7 +51,7 @@ export class HomePage {
         console.log('User Role:', this.userDocument.role); // Log user role
     
         switch (page) {
-            case 'pickup':
+            case 'add-inventory-storeroom':
                 authorized = this.userDocument.role === 'picker' || this.userDocument.role === 'Manager';
                 message = authorized ? 'Authorized user for picker page.' : 'Unauthorized user for picker page.';
                 break;
@@ -60,7 +60,7 @@ export class HomePage {
                 message = authorized ? 'Authorized user for delivery page.' : 'Unauthorized user for delivery page.';
                 break;
             case 'add-inventory':
-            case 'update':
+            case 'view':
                 authorized = this.userDocument.role === 'Manager';
                 message = authorized ? 'Authorized user for this page.' : 'Access denied for this page.';
                 break;
@@ -100,11 +100,11 @@ export class HomePage {
   }
 
   navigateToUpdateInventory(): Promise<void> {
-    return this.navigateBasedOnRole('update');
+    return this.navigateBasedOnRole('view');
   }
 
   navigateToPickupInventory(): Promise<void> {
-    return this.navigateBasedOnRole('pickup');
+    return this.navigateBasedOnRole('add-inventory-storeroom');
   }
 
   navigateToDeliverInventory(): Promise<void> {
