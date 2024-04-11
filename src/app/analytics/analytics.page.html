@@ -1,7 +1,13 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>analytics</ion-title>
-    <ion-icon routerLink="/home" slot="end" name="arrow-back-outline"></ion-icon>
+    <ion-segment color="success" value="all">
+      <ion-segment-button value="all">
+        <ion-label>Analytics</ion-label>
+      </ion-segment-button>
+      <ion-segment-button routerLink="/delivery" value="favorites">
+        <ion-label>Invoice Slip</ion-label>
+      </ion-segment-button>
+    </ion-segment>
   </ion-toolbar>
 </ion-header>
 

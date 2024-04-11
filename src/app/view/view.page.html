@@ -5,6 +5,30 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <ion-searchbar [(ngModel)]="searchTerm" placeholder="Search by name" (ionInput)="filterInventory()"></ion-searchbar>
+
+  <ion-item>
+    <ion-label>Filter by Category</ion-label>
+    <ion-select [(ngModel)]="selectedCategory" (ionChange)="filterInventory()">
+      <ion-select-option value="">All</ion-select-option>
+      <ion-select-option value="Cleaning Detergents">Cleaning Detergents</ion-select-option>
+      <ion-select-option value="Plastics">Plastics</ion-select-option>
+      <ion-select-option value="Cleaning Equipment">Cleaning Equipment</ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Filter by Quantity</ion-label>
+    <ion-select [(ngModel)]="selectedQuantityRange" (ionChange)="filterInventory()">
+      <ion-select-option value="">All</ion-select-option>
+      <ion-select-option value="tooLow">Too Low</ion-select-option>
+      <ion-select-option value="runningLow">Running Low</ion-select-option>
+      <ion-select-option value="middle">Middle</ion-select-option>
+      <ion-select-option value="full">Full</ion-select-option>
+    </ion-select>
+  </ion-item>
+
+ 
   <br>
   <ion-segment value="segment">
     <ion-segment-button value="custom" routerLink="/home">
@@ -19,7 +43,7 @@
   </ion-segment>
 
 
-  <div class="inventory-item" *ngFor="let item of inventory">
+  <div class="inventory-item" *ngFor="let item of filteredInventory">
     <h2>{{ item.name }}</h2>
     <p>Category: {{ item.category }}</p>
     <p>Description: {{ item.description }}</p>
