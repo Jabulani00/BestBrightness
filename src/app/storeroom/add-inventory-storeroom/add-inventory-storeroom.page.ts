@@ -76,7 +76,8 @@ export class AddInventoryStoreroomPage implements OnInit {
     // if the result has content
     if (result.hasContent) {
       this.barcode = result.content;
-      console.log(result.content); // log the raw scanned content
+      console.log(result.content);
+      document.querySelector('body')?.classList.remove('scanner-active'); // log the raw scanned content
     }
   }
   
