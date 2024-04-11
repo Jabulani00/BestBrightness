@@ -37,7 +37,6 @@ export class AddInventoryPage implements OnInit {
     private storage: AngularFireStorage,
     private loadingController: LoadingController,
    private  ToastController: ToastController,  private alertController: AlertController,
-  
   ) {}
 
   ngOnInit() {
@@ -64,18 +63,18 @@ export class AddInventoryPage implements OnInit {
   }
   
   async scanBarcode(){
-  await BarcodeScanner.checkPermission({ force: true });
 
+  document.querySelector('body')?.classList.add('scanner-active');
+  await BarcodeScanner.checkPermission({ force: true });
   // make background of WebView transparent
   // note: if you are using ionic this might not be enough, check below
-  BarcodeScanner.hideBackground();
-  
+  //BarcodeScanner.hideBackground();
   const result = await BarcodeScanner.startScan(); // start scanning and wait for a result
-
   // if the result has content
   if (result.hasContent) {
     this.barcode = result.content;
     console.log(result.content); // log the raw scanned content
+    alert(result.content);
   }
 }
 

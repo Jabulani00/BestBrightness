@@ -28,7 +28,8 @@
     <p>Picker's Details: {{ item.pickersDetails }}</p>
     <p>Date Of Pickup: {{ item.dateOfPickup }}</p>
     <p>Time Of Pickup: {{ item.timeOfPickup }}</p>
-    <img class="thumbnail" [src]="item.imageUrl" alt="{{ item.name }} Image">
+    <img class="thumbnail" [src]="item.imageUrl" alt="{{ item.name }} Image"><br>
+    <ion-button (click)="goToUpdate(item.name,item.category,item.description,item.quantity,item.barcode,item.pickersDetails,item.dateOfPickup,item.timeOfPickup ,item.imageUrl )">update</ion-button>
   </div>
   
 </ion-content>
