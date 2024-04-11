@@ -1,6 +1,6 @@
 /* General Styles */
 ion-content {
-    --background: linear-gradient(135deg, #3f51b5, #673ab7);
+    --background: linear-gradient(135deg, #c24d2c);
   }
   
   ion-item {
@@ -26,14 +26,14 @@ ion-content {
   
     ion-icon {
       font-size: 32px;
-      color: #673ab7;
+      color: #c24d2c;
     }
   }
   
   ion-label {
     h2 {
       font-weight: bold;
-      color: #3f51b5;
+      color: #c24d2c;
       text-transform: uppercase;
     }
   
@@ -81,6 +81,13 @@ ion-content {
   
     ion-label p {
       font-size: 12px;
+    }
+  }
+  ion-header {
+    ion-toolbar {
+      --background: #c24d2c; 
+      color:#fff;
+      text-align: center;
     }
   }
   

@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { LoadingController, NavController, ToastController } from '@ionic/angular';
-import firebase from 'firebase/compat/app'; // Import firebase app
+import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 
 @Component({
@@ -12,8 +12,12 @@ import 'firebase/compat/firestore';
   styleUrls: ['./login.page.scss'],
 })
 export class LoginPage implements OnInit {
-  email: any;
-  password: any;
+  email: string = '';
+  password: string = '';
+
+  // Default admin credentials
+  defaultAdminEmail: string = 'admin@best.com';
+  defaultAdminPassword: string = '@bestB1234';
 
   constructor(
     private router: Router,
@@ -31,26 +35,47 @@ export class LoginPage implements OnInit {
       message: message,
       duration: 2000,
       color: color,
-      position: 'top'
+      position: 'top',
     });
     toast.present();
   }
 
   async login() {
-    if (this.password == '') {
-      this.presentToast('Enter password', 'danger');
+    // Email validation
+    if (this.email.trim() === '') {
+      this.presentToast('Please enter your email address', 'danger');
+      return;
+    }
+
+    // Email format validation
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(this.email)) {
+      this.presentToast('Please enter a valid email address', 'danger');
+      return;
+    }
+
+    // Password validation
+    if (this.password.trim() === '') {
+      this.presentToast('Please enter your password', 'danger');
       return;
     }
 
     const loader = await this.loadingController.create({
-      message: '|Logging in...',
-      cssClass: 'custom-loader-class'
+      message: 'Logging in...',
+      cssClass: 'custom-loader-class',
     });
-   
     await loader.present();
 
+    // Check if the user is trying to log in with the default admin credentials
+    if (this.email === this.defaultAdminEmail && this.password === this.defaultAdminPassword) {
+      loader.dismiss();
+      this.router.navigate(['/user-profiles']);
+      return;
+    }
+
     // Query Firestore to find the document with the matching email
-    const userQuerySnapshot = await firebase.firestore()
+    const userQuerySnapshot = await firebase
+      .firestore()
       .collection('Users')
       .where('email', '==', this.email)
       .get();
@@ -66,8 +91,9 @@ export class LoginPage implements OnInit {
 
     if (userData) {
       if (userData['status'] === 'active') {
-        this.auth.signInWithEmailAndPassword(this.email, this.password)
-          .then(userCredential => {
+        this.auth
+          .signInWithEmailAndPassword(this.email, this.password)
+          .then((userCredential) => {
             loader.dismiss();
             const user = userCredential.user;
             this.router.navigate(['/home']);
@@ -75,14 +101,21 @@ export class LoginPage implements OnInit {
           .catch((error) => {
             loader.dismiss();
             const errorMessage = error.message;
-            this.presentToast(errorMessage, 'danger');
+            if (errorMessage.includes('wrong-password')) {
+              this.presentToast('Incorrect password', 'danger');
+            } else {
+              this.presentToast(errorMessage, 'danger');
+            }
           });
       } else if (userData['status'] === 'denied') {
         loader.dismiss();
         this.presentToast('You are not allowed in the system', 'danger');
       } else if (userData['status'] === 'pending') {
         loader.dismiss();
-        this.presentToast('Your account is pending. Please wait for admin approval.', 'warning');
+        this.presentToast(
+          'Your account is pending. Please wait for admin approval.',
+          'warning'
+        );
         // Redirect to profile page
         this.router.navigate(['/profile']);
       } else {
@@ -91,5 +124,4 @@ export class LoginPage implements OnInit {
       }
     }
   }
-
 }

@@ -3,6 +3,8 @@ import Chart from 'chart.js/auto';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { map, combineLatest, Observable } from 'rxjs';
 
+
+
 // Define an interface for the data structure
 interface InventoryItem {
   category: string;
