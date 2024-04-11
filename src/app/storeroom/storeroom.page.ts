@@ -14,10 +14,20 @@ export class StoreroomPage implements OnInit {
   selectedCategory: string = '';
   selectedQuantityRange: string = '';
 
+  isModalOpen = false;
+  selectedImageUrl = '';
+  modalTitle = '';
+
   constructor(private firestore: AngularFirestore) { }
 
   ngOnInit() {
     this.getInventory();
+  }
+
+  openModal(imageUrl: string, itemName: string) {
+    this.selectedImageUrl = imageUrl;
+    this.modalTitle = itemName;
+    this.isModalOpen = true;
   }
 
   getInventory() {

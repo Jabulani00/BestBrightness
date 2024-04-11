@@ -14,10 +14,20 @@ export class ViewPage implements OnInit {
   selectedCategory: string = '';
   selectedQuantityRange: string = '';
 
+  isModalOpen = false;
+  selectedImageUrl = '';
+  modalTitle = '';
+
   constructor(private firestore: AngularFirestore, private router: Router) {}
 
   ngOnInit() {
     this.getInventory();
+  }
+
+  openModal(imageUrl: string, itemName: string) {
+    this.selectedImageUrl = imageUrl;
+    this.modalTitle = itemName;
+    this.isModalOpen = true;
   }
 
   getInventory() {
