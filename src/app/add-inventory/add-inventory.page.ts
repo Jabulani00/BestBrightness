@@ -63,6 +63,8 @@ export class AddInventoryPage implements OnInit {
   }
   
   async scanBarcode(){
+
+  document.querySelector('body')?.classList.add('scanner-active');
   await BarcodeScanner.checkPermission({ force: true });
 
   // make background of WebView transparent
