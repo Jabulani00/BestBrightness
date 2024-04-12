@@ -28,7 +28,8 @@ export class AddInventoryStoreroomPage implements OnInit {
   imageUrl: string | null = null;
   cart: any[] = []; 
   toggleChecked: boolean = false; 
-
+  currentDate: Date;
+  currentTime: string;
 
 
 
@@ -38,7 +39,12 @@ export class AddInventoryStoreroomPage implements OnInit {
     private loadingController: LoadingController,
    private  ToastController: ToastController,  private alertController: AlertController,
   
-  ) {}
+  ) {
+    this.currentDate = new Date();
+    this.currentTime = this.currentDate.toLocaleTimeString("en-US", {
+      hour12: false,
+    });
+  }
 
   ngOnInit() {
   }
@@ -91,6 +97,10 @@ export class AddInventoryStoreroomPage implements OnInit {
 
 
   async addItem() {
+
+    this.checkBookingDateTime(this.currentDate,this.currentTime);
+
+
     const loader = await this.loadingController.create({
       message: 'Adding Inventory...',
     });
@@ -115,7 +125,7 @@ export class AddInventoryStoreroomPage implements OnInit {
         location:"storeroom"
       };
       this.cart.push(newItem);
-      this.presentToast('Item added to cart');
+      this.presentToast('Item added to cart','successfull');
       await this.firestore.collection('storeroomInventory').add(newItem);
       this.clearFields();
     } catch (error) {
@@ -235,7 +245,7 @@ const docDefinition = {
       this.cart = [];
   
       // Show success toast notification
-      this.presentToast('Slip generated successfully');
+      this.presentToast('Slip generated successfully',"successfull");
     } catch (error) {
       console.error('Error generating slip:', error);
       // Handle error
@@ -262,11 +272,30 @@ clearFields() {
 }
 
 
-async presentToast(message: string) {
+checkBookingDateTime(date: any, startTime: any): void {
+  // Check if the date is in the past
+  if (date >= this.currentDate.toISOString().split("T")[0]) {
+    this.presentToast("date must be behind or must be current date.","warning");
+    return;
+  }
+
+  if (!this.imageBase64){
+    this.presentToast("Capture the image of the product","warning");
+    return;
+  }
+
+  // Check if the time is in the past
+}
+
+
+
+
+async presentToast(message: string,color:string) {
   const toast = await this.ToastController.create({
     message: message,
-    duration: 2000,
-    position: 'top'
+    duration: 4000,
+    position: 'top',
+    color:color
   });
   toast.present();
 }

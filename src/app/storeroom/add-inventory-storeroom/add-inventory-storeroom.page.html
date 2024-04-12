@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>add-inventory-storeroom</ion-title>
-    <ion-icon slot="end" name="arrow-back-outline"></ion-icon>
+    <ion-icon slot="end"  name="arrow-back-outline" routerLink="/home"></ion-icon>
   </ion-toolbar>
 </ion-header>
 
@@ -61,10 +61,7 @@
       <ion-button  expand="block" id="fileInput" color="medium" class="custom-file-input" (click)="takePicture()">
         <ion-icon name="camera"></ion-icon>
         Take Picture
-      </ion-button >
-
-
-
+      </ion-button>
       <ion-button expand="block" (click)="addItem()">Add Item</ion-button>
       <ion-button expand="block" (click)="generateSlip()">DONE</ion-button>
     </ion-card-content>

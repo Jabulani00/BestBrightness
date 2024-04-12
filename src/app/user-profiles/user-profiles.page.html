@@ -16,6 +16,7 @@
         <p>Role: {{ user.role }}</p>
         <p [ngClass]="{'active': user.status === 'active', 'denied': user.status === 'denied', 'pending': user.status === 'pending'}">Status: {{ user.status }}</p>
       </ion-label>
+    <div class="block">
       <ion-button (click)="approveUser(user)" color="success" fill="outline" class="animate__animated animate__bounceIn">
         <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
         Approve
@@ -24,6 +25,7 @@
         <ion-icon name="close-circle-outline" slot="start"></ion-icon>
         Decline
       </ion-button>
+    </div>
     </ion-item>
   </ion-list>
 </ion-content>
