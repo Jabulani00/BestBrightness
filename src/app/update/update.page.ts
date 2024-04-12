@@ -102,6 +102,8 @@ if(this.imageBase64){
   toggleMode() {
     if (this.toggleChecked) {
       this.barcode = ''; // Clear the barcode value when switching to input mode
+      BarcodeScanner.showBackground();
+      BarcodeScanner.stopScan();
     }
   }
   clearFields() {
