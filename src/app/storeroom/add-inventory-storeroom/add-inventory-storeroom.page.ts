@@ -129,7 +129,8 @@ export class AddInventoryStoreroomPage implements OnInit {
         location:"storeroom"
       };
       this.cart.push(newItem);
-      this.presentToast('Item added to cart','successfull');
+      console.log(this.cart);
+      this.presentToast('Item added to cart','success');
       await this.firestore.collection('storeroomInventory').add(newItem);
       this.clearFields();
     } catch (error) {
@@ -145,7 +146,7 @@ export class AddInventoryStoreroomPage implements OnInit {
       message: 'Generating Slip...',
     });
     await loader.present();
-  
+  console.log("data",this.cart)
     try {
       // Create a slip document in Firestore
       const slipData = {
@@ -187,7 +188,7 @@ const docDefinition = {
       {
           table: {
               headerRows: 1,
-              widths: [ '*', '*', '*', '*', '*', '*' ],
+              widths: [ 76, 76,76,76,76,76 ],
               body: [
                   [
                       { text: 'Name', style: 'tableHeader' },
@@ -249,7 +250,7 @@ const docDefinition = {
       this.cart = [];
   
       // Show success toast notification
-      this.presentToast('Slip generated successfully',"successfull");
+      this.presentToast('Slip generated successfully',"success");
     } catch (error) {
       console.error('Error generating slip:', error);
       // Handle error
@@ -298,7 +299,7 @@ async presentToast(message: string,color:string) {
   const toast = await this.ToastController.create({
     message: message,
     duration: 4000,
-    position: 'top',
+    position: 'middle',
     color:color
   });
   toast.present();
