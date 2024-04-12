@@ -149,7 +149,7 @@ if(this.imageBase64){
       this.itemDescription = this.productInfor.description;
       this.itemQuantity = this.productInfor.quantity;
       this.newImage = this.productInfor.imageUrl;
-    
+    this.imageUrl =this.productInfor.imageUrl
     }
   }
 }
