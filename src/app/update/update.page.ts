@@ -38,7 +38,7 @@ export class UpdatePage implements OnInit {
 
   ngOnInit() {
     this.getPassedData();
-    console.log(this.imageUrl+ "1") ;
+    document.querySelector('body')?.classList.remove('scanner-active'); 
   }
 
   async scanBarcode() {
@@ -104,6 +104,7 @@ if(this.imageBase64){
       this.barcode = ''; // Clear the barcode value when switching to input mode
       BarcodeScanner.showBackground();
       BarcodeScanner.stopScan();
+      document.querySelector('body')?.classList.remove('scanner-active'); 
     }
   }
   clearFields() {

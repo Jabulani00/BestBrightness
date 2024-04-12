@@ -52,7 +52,10 @@ export class AddInventoryPage implements OnInit {
     });
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    document.querySelector('body')?.classList.remove('scanner-active'); 
+  }
+  
   async takePicture() {
     const image = await Camera.getPhoto({
       quality: 90,
@@ -95,6 +98,7 @@ export class AddInventoryPage implements OnInit {
       this.barcode = ''; // Clear the barcode value when switching to input mode
       BarcodeScanner.showBackground();
   BarcodeScanner.stopScan();
+  document.querySelector('body')?.classList.remove('scanner-active');
     }
   }
   checkBookingDateTime(date: any, startTime: any): void {

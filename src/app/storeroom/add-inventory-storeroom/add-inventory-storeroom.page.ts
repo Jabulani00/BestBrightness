@@ -47,6 +47,7 @@ export class AddInventoryStoreroomPage implements OnInit {
   }
 
   ngOnInit() {
+    document.querySelector('body')?.classList.remove('scanner-active'); 
   }
   async takePicture() {
     const image = await Camera.getPhoto({
@@ -92,6 +93,7 @@ export class AddInventoryStoreroomPage implements OnInit {
       this.barcode = ''; // Clear the barcode value when switching to input mode
       BarcodeScanner.showBackground();
       BarcodeScanner.stopScan();
+      document.querySelector('body')?.classList.remove('scanner-active'); 
     }
   }
   
