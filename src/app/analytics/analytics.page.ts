@@ -10,6 +10,7 @@ interface InventoryItem {
   category: string;
   quantity: number;
   name: string;
+  barcode: string;
 }
 
 interface CategoryComparisonData {
@@ -21,6 +22,11 @@ interface CategoryComparisonData {
 interface TotalQuantitiesData {
   category: string;
   totalQuantity: number;
+}
+interface UpdateFrequencyData {
+  category: string;
+  updateFrequency: number;
+  productName: string;
 }
 @Component({
   selector: 'app-analytics',
@@ -35,6 +41,73 @@ export class AnalyticsPage implements OnInit {
     this.generateQuantityByCategory();
     this.generateCategoryComparisonChart();
     this.generateTotalQuantitiesChart();
+    this.generateUpdateFrequencyChart();
+  }
+
+  generateUpdateFrequencyChart() {
+    combineLatest([
+      this.firestore.collection('inventory').valueChanges(),
+      this.firestore.collection('storeroomInventory').valueChanges(),
+    ])
+      .pipe(
+        map(([inventoryData, storeroomData]: [any[], any[]]) => {
+          const inventoryItems: InventoryItem[] = inventoryData.map(
+            (item: any) => ({
+              category: item.category,
+              quantity: item.quantity,
+              name: item.name,
+              barcode: item.barcode,
+            })
+          );
+          const storeroomItems: InventoryItem[] = storeroomData.map(
+            (item: any) => ({
+              category: item.category,
+              quantity: item.quantity,
+              name: item.name,
+              barcode: item.barcode,
+            })
+          );
+  
+          const allItems = [...inventoryItems, ...storeroomItems];
+          const barcodes = Array.from(new Set(allItems.map((item) => item.barcode)));
+  
+          const updateFrequencyData: UpdateFrequencyData[] = barcodes.map((barcode) => {
+            const inventoryUpdates = inventoryItems.filter((item) => item.barcode === barcode).length;
+            const storeroomUpdates = storeroomItems.filter((item) => item.barcode === barcode).length;
+            const totalUpdates = inventoryUpdates + storeroomUpdates;
+            const productName = allItems.find((item) => item.barcode === barcode)?.name || barcode;
+            return { category: barcode, updateFrequency: totalUpdates, productName };
+          });
+  
+          return updateFrequencyData;
+        })
+      )
+      .subscribe((updateFrequencyData: UpdateFrequencyData[]) => {
+        const ctx = document.getElementById('updateFrequencyChart') as HTMLCanvasElement;
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: updateFrequencyData.map((item) => item.productName),
+            datasets: [
+              {
+                label: 'Update Frequency',
+                data: updateFrequencyData.map((item) => item.updateFrequency),
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            indexAxis: 'y',
+            scales: {
+              x: {
+                beginAtZero: true,
+              },
+            },
+          },
+        });
+      });
   }
 
   generateQuantityByCategoryChart() {
@@ -185,6 +258,7 @@ export class AnalyticsPage implements OnInit {
               category: item.category,
               quantity: item.quantity,
               name: item.name,
+              barcode: item.barcode,
             })
           );
           const storeroomItems: InventoryItem[] = storeroomData.map(
@@ -192,33 +266,28 @@ export class AnalyticsPage implements OnInit {
               category: item.category,
               quantity: item.quantity,
               name: item.name,
+              barcode: item.barcode,
             })
           );
-
-          const categories = Array.from(
-            new Set([
-              ...inventoryItems.map((item) => item.name),
-              ...storeroomItems.map((item) => item.name),
-            ])
-          );
-
+  
+          const allItems = [...inventoryItems, ...storeroomItems];
+          const categories = Array.from(new Set(allItems.map((item) => item.category)));
+  
           const comparisonData: CategoryComparisonData[] = categories.map((category) => {
             const inventoryQuantity = inventoryItems
-              .filter((item) => item.name === category)
+              .filter((item) => item.category === category)
               .reduce((acc, curr) => acc + curr.quantity, 0);
             const storeroomQuantity = storeroomItems
-              .filter((item) => item.name === category)
+              .filter((item) => item.category === category)
               .reduce((acc, curr) => acc + curr.quantity, 0);
             return { category, inventoryQuantity, storeroomQuantity };
           });
-
+  
           return comparisonData;
         })
       )
       .subscribe((comparisonData: CategoryComparisonData[]) => {
-        const ctx = document.getElementById(
-          'categoryComparisonChart'
-        ) as HTMLCanvasElement;
+        const ctx = document.getElementById('categoryComparisonChart') as HTMLCanvasElement;
         new Chart(ctx, {
           type: 'pie',
           data: {
@@ -256,6 +325,7 @@ export class AnalyticsPage implements OnInit {
               category: item.category,
               quantity: item.quantity,
               name: item.name,
+              barcode: item.barcode, // Include the barcode property
             })
           );
           const storeroomItems: InventoryItem[] = storeroomData.map(
@@ -263,6 +333,7 @@ export class AnalyticsPage implements OnInit {
               category: item.category,
               quantity: item.quantity,
               name: item.name,
+              barcode: item.barcode, // Include the barcode property
             })
           );
 
