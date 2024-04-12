@@ -93,6 +93,8 @@ export class AddInventoryPage implements OnInit {
   toggleMode() {
     if (this.toggleChecked) {
       this.barcode = ''; // Clear the barcode value when switching to input mode
+      BarcodeScanner.showBackground();
+  BarcodeScanner.stopScan();
     }
   }
   checkBookingDateTime(date: any, startTime: any): void {
