@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import {  ViewChild, ElementRef, Renderer2 } from '@angular/core';
 import { NavigationExtras, Router } from '@angular/router';
-
 
 @Component({
   selector: 'app-view',
@@ -10,21 +8,72 @@ import { NavigationExtras, Router } from '@angular/router';
   styleUrls: ['./view.page.scss'],
 })
 export class ViewPage implements OnInit {
+  inventory: any[] = [];
+  filteredInventory: any[] = [];
+  searchTerm: string = '';
+  selectedCategory: string = '';
+  selectedQuantityRange: string = '';
 
-  inventory: any[] = []; // Initialize here
+  isModalOpen = false;
+  selectedImageUrl = '';
+  modalTitle = '';
 
-  constructor(private firestore: AngularFirestore,private router: Router) { }
+  constructor(private firestore: AngularFirestore, private router: Router) {}
 
   ngOnInit() {
     this.getInventory();
   }
 
-  getInventory() {
-    this.firestore.collection('inventory', ref => ref.orderBy('timestamp', 'desc')).valueChanges().subscribe((data: any[]) => {
-      this.inventory = data;
-    });
+  openModal(imageUrl: string, itemName: string) {
+    this.selectedImageUrl = imageUrl;
+    this.modalTitle = itemName;
+    this.isModalOpen = true;
   }
-  goToUpdate(name:any,category:any,description:any,quantity:any,barcode:any,pickersDetails:any,dateOfPickup:any,timeOfPickup :any,imageUrl:any){
+
+  getInventory() {
+    this.firestore
+      .collection('inventory', (ref) => ref.orderBy('timestamp', 'desc'))
+      .valueChanges()
+      .subscribe((data: any[]) => {
+        this.inventory = data;
+        this.filterInventory();
+      });
+  }
+
+  filterInventory() {
+    this.filteredInventory = this.inventory.filter((item) =>
+      (item.name.toLowerCase().includes(this.searchTerm.toLowerCase()) || 
+      this.searchTerm === '') && 
+      (this.selectedCategory === '' || item.category === this.selectedCategory) &&
+      (this.selectedQuantityRange === '' || this.checkQuantityRange(item.quantity))
+    );
+  }
+
+  checkQuantityRange(quantity: number): boolean {
+    if (this.selectedQuantityRange === 'tooLow' && quantity <= 10) {
+      return true;
+    } else if (this.selectedQuantityRange === 'runningLow' && quantity >= 11 && quantity <= 20) {
+      return true;
+    } else if (this.selectedQuantityRange === 'middle' && quantity >= 21 && quantity <= 49) {
+      return true;
+    } else if (this.selectedQuantityRange === 'full' && quantity >= 50) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  goToUpdate(
+    name: any,
+    category: any,
+    description: any,
+    quantity: any,
+    barcode: any,
+    pickersDetails: any,
+    dateOfPickup: any,
+    timeOfPickup: any,
+    imageUrl: any
+  ) {
     let navi: NavigationExtras = {
       state: {
         name: name,
@@ -35,20 +84,9 @@ export class ViewPage implements OnInit {
         pickersDetails: pickersDetails,
         dateOfPickup: dateOfPickup,
         timeOfPickup: timeOfPickup,
-        barcode:barcode || '',
+        barcode: barcode || '',
       },
-   };
-   this.router.navigate(['/update'], navi);
-   }
-
-
-
-
-
-
-
+    };
+    this.router.navigate(['/update'], navi);
   }
-
-
-
-
+}
