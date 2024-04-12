@@ -32,6 +32,8 @@ export class AddInventoryPage implements OnInit {
   imageUrl: string | null = null;
   cart: any[] = [];
   qrCodeIdentifire: any;
+  currentDate: Date;
+  currentTime: string;
 
   // Variable to hold the barcode value
   toggleChecked: boolean = false;
@@ -43,7 +45,12 @@ export class AddInventoryPage implements OnInit {
     private loadingController: LoadingController,
     private ToastController: ToastController,
     private alertController: AlertController
-  ) {}
+  ) {
+    this.currentDate = new Date();
+    this.currentTime = this.currentDate.toLocaleTimeString("en-US", {
+      hour12: false,
+    });
+  }
 
   ngOnInit() {}
   async takePicture() {
@@ -89,9 +96,23 @@ export class AddInventoryPage implements OnInit {
       this.barcode = ''; // Clear the barcode value when switching to input mode
     }
   }
-
+  checkBookingDateTime(date: any, startTime: any): void {
+    // Check if the date is in the past
+    if (date >= this.currentDate.toISOString().split("T")[0]) {
+      this.presentToast("date must be behind or must be current date.","warning");
+      return;
+    }
+  
+    if (!this.imageBase64){
+      this.presentToast("Capture the image of the product","warning");
+      return;
+    }
+  
+    // Check if the time is in the past
+  }
   async addItem() {
     let itemQuantity = 0;
+    this.checkBookingDateTime(this.currentDate,this.currentTime);
     const loader = await this.loadingController.create({
       message: 'Adding Inventory...',
     });
@@ -107,7 +128,7 @@ export class AddInventoryPage implements OnInit {
         .get();
       console.log(userEmail);
       if (userEmail.empty) {
-        this.presentToast('this delivery guy is not no our system');
+        this.presentToast('this delivery guy is not no our system',"warning");
         console.log('this delivary guy is not no our system');
         return;
       }
@@ -126,7 +147,7 @@ export class AddInventoryPage implements OnInit {
           this.presentToast(
             'Insufficient Stock, The stock for this item is insufficient. the are ' +
               existingItemData.quantity +
-              ' available'
+              ' available',"warning"
           );
           return;
         }
@@ -139,7 +160,7 @@ export class AddInventoryPage implements OnInit {
         console.log('Storeroom Inventory Updated (Minused)');
       } else {
         this.presentToast(
-          'this product barcode does  not metch any on our storeroom'
+          'this product barcode does  not metch any on our storeroom',"warning"
         );
         return;
       }
@@ -173,7 +194,7 @@ export class AddInventoryPage implements OnInit {
         timestamp: new Date(),
       };
       this.cart.push(newItem);
-      this.presentToast('Item added to cart');
+      this.presentToast('Item added to cart',"successfull");
       await this.firestore.collection('inventory').add(newItem);
       this.clearFields();
     } catch (error) {
@@ -288,7 +309,7 @@ const docDefinition = {
 
 
       // Show success toast notification
-      this.presentToast('Slip generated successfully');
+      this.presentToast('Slip generated successfully',"successfull");
     } catch (error) {
       console.error('Error generating slip:', error);
       // Handle error
@@ -310,11 +331,12 @@ const docDefinition = {
     this.imageUrl = null;
   }
 
-  async presentToast(message: string) {
+  async presentToast(message: string,color:string) {
     const toast = await this.ToastController.create({
       message: message,
-      duration: 2000,
+      duration: 4000,
       position: 'top',
+      color:color
     });
     toast.present();
   }
