@@ -90,7 +90,8 @@ export class AddInventoryPage implements OnInit {
 
     modal.onDidDismiss().then((data: any) => {
       if (data && data.data) {
-        this.barcode = data.data.barcode; // Update the barcode in the parent component
+        this.barcode = data.data.barcode;
+        scrollElement?.classList.add('custom-background'); // Update the barcode in the parent component
       }
     });
 
