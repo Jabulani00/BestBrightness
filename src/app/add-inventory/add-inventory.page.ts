@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { finalize } from 'rxjs/operators';
@@ -13,6 +13,7 @@ import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
 import { BarcodeScannerPage } from '../barcode-scanner/barcode-scanner.page';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 const pdfMake = require('pdfmake/build/pdfmake.js');
+import { IonContent } from '@ionic/angular';
 
 @Component({
   selector: 'app-add-inventory',
@@ -34,11 +35,13 @@ export class AddInventoryPage implements OnInit {
   qrCodeIdentifire: any;
   currentDate: Date;
   currentTime: string;
+  @ViewChild(IonContent, { static: true }) ionContent: IonContent | undefined;
 
   // Variable to hold the barcode value
   toggleChecked: boolean = false;
 
   constructor(
+    private renderer: Renderer2,
     private modalController: ModalController,
     private firestore: AngularFirestore,
     private storage: AngularFireStorage,
@@ -75,6 +78,9 @@ export class AddInventoryPage implements OnInit {
   }
 
   async scanBarcode() {
+    document.querySelector('body')?.classList.add('scanner-active');
+    const scrollElement = await this.ionContent?.getScrollElement();
+    scrollElement?.classList.remove('custom-background');
     const modal = await this.modalController.create({
       component: BarcodeScannerPage,
       componentProps: {
