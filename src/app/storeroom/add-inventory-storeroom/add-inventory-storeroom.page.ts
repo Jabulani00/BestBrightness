@@ -69,7 +69,7 @@ export class AddInventoryStoreroomPage implements OnInit {
   
     // make background of WebView transparent
     // note: if you are using ionic this might not be enough, check below
-    BarcodeScanner.hideBackground();
+   // BarcodeScanner.hideBackground();
     
     const result = await BarcodeScanner.startScan(); // start scanning and wait for a result
   

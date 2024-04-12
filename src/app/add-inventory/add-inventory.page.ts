@@ -61,19 +61,19 @@ export class AddInventoryPage implements OnInit {
     const snapshot = await uploadTask;
     return snapshot.ref.getDownloadURL();
   }
-  
+
   async scanBarcode() {
     document.querySelector('body')?.classList.add('scanner-active');
     await BarcodeScanner.checkPermission({ force: true });
     // make background of WebView transparent
     // note: if you are using ionic this might not be enough, check below
-    BarcodeScanner.hideBackground();
+    //BarcodeScanner.hideBackground();
     const result = await BarcodeScanner.startScan(); // start scanning and wait for a result
     // if the result has content
     if (result.hasContent) {
       this.barcode = result.content;
       console.log(result.content); // log the raw scanned content
-      this.toggleChecked=true;
+      document.querySelector('body')?.classList.remove('scanner-active');
     }
   }
 
