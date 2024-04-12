@@ -18,7 +18,6 @@ export class BarcodeScannerPage implements OnInit {
 
 
   async scanBarcode() {
-   
     document.querySelector('body')?.classList.add('scanner-active');
     await BarcodeScanner.checkPermission({ force: true });
     const result = await BarcodeScanner.startScan();
@@ -28,7 +27,7 @@ export class BarcodeScannerPage implements OnInit {
       document.querySelector('body')?.classList.remove('scanner-active');
     }
   }
-  
+
   async closeScanner(){
     await BarcodeScanner.stopScan();
 
