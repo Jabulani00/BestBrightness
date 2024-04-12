@@ -199,6 +199,7 @@ export class AddInventoryPage implements OnInit {
         timestamp: new Date(),
       };
       this.cart.push(newItem);
+
       this.presentToast('Item added to cart',"successfull");
       await this.firestore.collection('inventory').add(newItem);
       this.clearFields();
@@ -253,7 +254,7 @@ const docDefinition = {
       {
           table: {
               headerRows: 1,
-              widths: [ '*', '*', '*', '*', '*', '*' ],
+              widths: [ '75', '75', '75', '75', '75', '75' ],
               body: [
                   [
                       { text: 'Name', style: 'tableHeader' },
