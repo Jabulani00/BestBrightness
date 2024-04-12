@@ -32,11 +32,13 @@ export class UpdatePage implements OnInit {
     private router: Router,
     private firestore: AngularFirestore,
     private fireStorage: AngularFireStorage
-  ) {}
+  ) {
+    
+  }
 
   ngOnInit() {
     this.getPassedData();
-    // Get the item ID from route parameters
+    console.log(this.imageUrl+ "1") ;
   }
 
   async scanBarcode() {
