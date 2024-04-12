@@ -63,6 +63,7 @@ export class AddInventoryPage implements OnInit {
   }
   
   async scanBarcode() {
+    document.querySelector('body')?.classList.remove('custom-background');
     document.querySelector('body')?.classList.add('scanner-active');
     await BarcodeScanner.checkPermission({ force: true });
     // make background of WebView transparent
@@ -74,6 +75,7 @@ export class AddInventoryPage implements OnInit {
       this.barcode = result.content;
       console.log(result.content); // log the raw scanned content
       this.toggleChecked=true;
+      document.querySelector('body')?.classList.add('custom-background');
     }
   }
 

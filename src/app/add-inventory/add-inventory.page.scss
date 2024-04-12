@@ -1,8 +1,15 @@
-// /* General Styles */
-// ion-content {
-//   --ion-background-color: var(--ion-color-light);
-//   --animate-duration: 0.4s;
-// }
+/* General Styles */
+ion-content {
+  --ion-background-color: var(--ion-color-light);
+  --animate-duration: 0.4s;
+}
+.custom-background {
+  --background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('/assets/v.jpg') no-repeat center / cover;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 ion-card {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
