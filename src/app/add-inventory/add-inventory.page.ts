@@ -3,9 +3,14 @@ import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { finalize } from 'rxjs/operators';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
-import { AlertController, LoadingController, ToastController } from '@ionic/angular';
+import {
+  AlertController,
+  LoadingController,
+  ModalController,
+  ToastController,
+} from '@ionic/angular';
 import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
-
+import { BarcodeScannerPage } from '../barcode-scanner/barcode-scanner.page';
 
 @Component({
   selector: 'app-add-inventory',
@@ -13,7 +18,6 @@ import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
   styleUrls: ['./add-inventory.page.scss'],
 })
 export class AddInventoryPage implements OnInit {
-
   itemName: string = '';
   itemCategory: string = '';
   itemDescription: string = '';
@@ -24,29 +28,28 @@ export class AddInventoryPage implements OnInit {
   barcode: string = '';
   imageBase64: any;
   imageUrl: string | null = null;
-  cart: any[] = []; 
-  qrCodeIdentifire:any;
+  cart: any[] = [];
+  qrCodeIdentifire: any;
 
-
- // Variable to hold the barcode value
- toggleChecked: boolean = false; 
-
+  // Variable to hold the barcode value
+  toggleChecked: boolean = false;
 
   constructor(
+    private modalController: ModalController,
     private firestore: AngularFirestore,
     private storage: AngularFireStorage,
     private loadingController: LoadingController,
-   private  ToastController: ToastController,  private alertController: AlertController,
+    private ToastController: ToastController,
+    private alertController: AlertController
   ) {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
   async takePicture() {
     const image = await Camera.getPhoto({
       quality: 90,
       allowEditing: false,
       resultType: CameraResultType.Base64,
-      source: CameraSource.Camera
+      source: CameraSource.Camera,
     });
     this.imageBase64 = image.base64String;
   }
@@ -61,32 +64,32 @@ export class AddInventoryPage implements OnInit {
     const snapshot = await uploadTask;
     return snapshot.ref.getDownloadURL();
   }
-  
+
   async scanBarcode() {
-    document.querySelector('body')?.classList.remove('custom-background');
-    document.querySelector('body')?.classList.add('scanner-active');
-    await BarcodeScanner.checkPermission({ force: true });
-    // make background of WebView transparent
-    // note: if you are using ionic this might not be enough, check below
-    BarcodeScanner.hideBackground();
-    const result = await BarcodeScanner.startScan(); // start scanning and wait for a result
-    // if the result has content
-    if (result.hasContent) {
-      this.barcode = result.content;
-      console.log(result.content); // log the raw scanned content
-      this.toggleChecked=true;
-      document.querySelector('body')?.classList.add('custom-background');
+    const modal = await this.modalController.create({
+      component: BarcodeScannerPage,
+      componentProps: {
+        barCode: this.barcode, // Pass initial value if needed
+      },
+    });
+
+    modal.onDidDismiss().then((data: any) => {
+      if (data && data.data) {
+        this.barcode = data.data.barcode; // Update the barcode in the parent component
+      }
+    });
+
+    return await modal.present();
+  }
+
+  toggleMode() {
+    if (this.toggleChecked) {
+      this.barcode = ''; // Clear the barcode value when switching to input mode
     }
   }
 
-toggleMode() {
-  if (this.toggleChecked) {
-    this.barcode = ''; // Clear the barcode value when switching to input mode
-  }
-}
-
   async addItem() {
-    let itemQuantity=0;
+    let itemQuantity = 0;
     const loader = await this.loadingController.create({
       message: 'Adding Inventory...',
     });
@@ -96,53 +99,64 @@ toggleMode() {
       if (this.imageBase64) {
         this.imageUrl = await this.uploadImage(this.imageBase64);
       }
-      const userEmail = await this.firestore.collection('Users').ref.where('email', '==', this.pickersDetails).get();
-   console.log(userEmail)
+      const userEmail = await this.firestore
+        .collection('Users')
+        .ref.where('email', '==', this.pickersDetails)
+        .get();
+      console.log(userEmail);
       if (userEmail.empty) {
-        this.presentToast("this delivery guy is not no our system");
-        console.log("this delivary guy is not no our system");
+        this.presentToast('this delivery guy is not no our system');
+        console.log('this delivary guy is not no our system');
         return;
       }
 
+      // Check if there is an existing item with the same barcode in the storeroomInventory collection
+      const existingItemQuery = await this.firestore
+        .collection('storeroomInventory')
+        .ref.where('barcode', '==', this.barcode)
+        .get();
+      if (!existingItemQuery.empty) {
+        // Update the quantity of the existing item in the storeroomInventory collection
+        const existingItemDoc = existingItemQuery.docs[0];
+        const existingItemData: any = existingItemDoc.data();
+        if (existingItemData.quantity < this.itemQuantity) {
+          // Show an alert if the stock is insufficient
+          this.presentToast(
+            'Insufficient Stock, The stock for this item is insufficient. the are ' +
+              existingItemData.quantity +
+              ' available'
+          );
+          return;
+        }
+        const updatedQuantity = existingItemData.quantity - this.itemQuantity;
+        console.log(existingItemData.quantity);
+        console.log(updatedQuantity);
+        itemQuantity = existingItemData.quantity;
 
-  // Check if there is an existing item with the same barcode in the storeroomInventory collection
-  const existingItemQuery = await this.firestore.collection('storeroomInventory').ref.where('barcode', '==', this.barcode).get();
-  if (!existingItemQuery.empty) {
-   // Update the quantity of the existing item in the storeroomInventory collection
-    const existingItemDoc = existingItemQuery.docs[0];
-    const existingItemData: any = existingItemDoc.data();
-    if (existingItemData.quantity < this.itemQuantity) {
-      // Show an alert if the stock is insufficient
-     this.presentToast('Insufficient Stock, The stock for this item is insufficient. the are '+existingItemData.quantity+' available');
-      return;
-  }
-    const updatedQuantity = existingItemData.quantity - this.itemQuantity;
-    console.log(existingItemData.quantity);
-    console.log( updatedQuantity);
-    itemQuantity = existingItemData.quantity;
-
-    await existingItemDoc.ref.update({ quantity: updatedQuantity });
-    console.log("Storeroom Inventory Updated (Minused)")
-   
-  } else{
-    this.presentToast("this product barcode does  not metch any on our storeroom")
-    return;
-  }
-///////////////////////////////////////
-// Check if there's an existing item with the same name in the inventory collection
-const existingItemQueryStore = await this.firestore.collection('inventory').ref.where('barcode', '==', this.barcode).get();
-if (!existingItemQueryStore.empty) {
- // Update the quantity of the existing item in the storeroomInventory collection
-  const existingItemDoc = existingItemQuery.docs[0];
-  const existingItemData: any = existingItemDoc.data();
-  const updatedQuantity = existingItemData.quantity + this.itemQuantity;
-  this.itemQuantity += updatedQuantity
-  await existingItemDoc.ref.update({ quantity: updatedQuantity });
-  console.log("Storeroom Inventory Updated (Plused)");
-  return
- 
-} 
-
+        await existingItemDoc.ref.update({ quantity: updatedQuantity });
+        console.log('Storeroom Inventory Updated (Minused)');
+      } else {
+        this.presentToast(
+          'this product barcode does  not metch any on our storeroom'
+        );
+        return;
+      }
+      ///////////////////////////////////////
+      // Check if there's an existing item with the same name in the inventory collection
+      const existingItemQueryStore = await this.firestore
+        .collection('inventory')
+        .ref.where('barcode', '==', this.barcode)
+        .get();
+      if (!existingItemQueryStore.empty) {
+        // Update the quantity of the existing item in the storeroomInventory collection
+        const existingItemDoc = existingItemQuery.docs[0];
+        const existingItemData: any = existingItemDoc.data();
+        const updatedQuantity = existingItemData.quantity + this.itemQuantity;
+        this.itemQuantity += updatedQuantity;
+        await existingItemDoc.ref.update({ quantity: updatedQuantity });
+        console.log('Storeroom Inventory Updated (Plused)');
+        return;
+      }
 
       const newItem = {
         name: this.itemName,
@@ -173,12 +187,12 @@ if (!existingItemQueryStore.empty) {
       message: 'Generating Slip...',
     });
     await loader.present();
-  
+
     try {
       // Create a slip document in Firestore
       const slipData = {
         date: new Date(),
-        items: this.cart.map(item => ({
+        items: this.cart.map((item) => ({
           name: item.name,
           quantity: item.quantity,
           category: item.category,
@@ -191,10 +205,10 @@ if (!existingItemQueryStore.empty) {
         })),
       };
       await this.firestore.collection('slips').add(slipData);
-  
+
       // Clear the cart after generating the slip
       this.cart = [];
-  
+
       // Show success toast notification
       this.presentToast('Slip generated successfully');
     } catch (error) {
@@ -203,17 +217,7 @@ if (!existingItemQueryStore.empty) {
     } finally {
       loader.dismiss();
     }
-   
-    
-
-
-
-    
   }
-
-
-
-
 
   clearFields() {
     this.itemName = '';
@@ -228,12 +232,11 @@ if (!existingItemQueryStore.empty) {
     this.imageUrl = null;
   }
 
-
   async presentToast(message: string) {
     const toast = await this.ToastController.create({
       message: message,
       duration: 2000,
-      position: 'top'
+      position: 'top',
     });
     toast.present();
   }

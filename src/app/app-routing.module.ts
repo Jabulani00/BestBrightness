@@ -70,6 +70,10 @@ const routes: Routes = [
     path: 'storeroom',
     loadChildren: () => import('./storeroom/storeroom.module').then( m => m.StoreroomPageModule)
   },
+  {
+    path: 'barcode-scanner',
+    loadChildren: () => import('./barcode-scanner/barcode-scanner.module').then( m => m.BarcodeScannerPageModule)
+  },
 
 
 
