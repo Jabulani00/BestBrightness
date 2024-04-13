@@ -283,8 +283,6 @@ clearFields() {
   this.barcode = '';
   this.imageBase64 = null;
   this.imageUrl = null;
-  
- 
 }
 
 
