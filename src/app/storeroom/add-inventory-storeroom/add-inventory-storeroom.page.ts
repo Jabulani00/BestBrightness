@@ -30,6 +30,9 @@ export class AddInventoryStoreroomPage implements OnInit {
   toggleChecked: boolean = false; 
   currentDate: Date;
   currentTime: string;
+  phone:any;
+  Cumpany:any;
+  pickersDetailsEmail:any;
 
 
 
@@ -126,7 +129,10 @@ export class AddInventoryStoreroomPage implements OnInit {
         timeOfPickup: this.timeOfPickup,
         barcode: this.barcode || '',
         timestamp: new Date(),
-        location:"storeroom"
+        location:"storeroom",
+        pickersDetailsEmail:this.pickersDetailsEmail,
+        phone :this.phone,
+        Cumpany:this.Cumpany
       };
       this.cart.push(newItem);
       console.log(this.cart);
@@ -161,6 +167,9 @@ export class AddInventoryStoreroomPage implements OnInit {
           dateOfPickup: item.dateOfPickup,
           timeOfPickup: item.timeOfPickup,
           barcode: item.barcode,
+          pickersDetailsEmail:this.pickersDetailsEmail,
+          phone :this.phone,
+          Cumpany:this.Cumpany
         })),
       };
       await this.firestore.collection('slips').add(slipData);
@@ -274,6 +283,8 @@ clearFields() {
   this.barcode = '';
   this.imageBase64 = null;
   this.imageUrl = null;
+  
+ 
 }
 
 
