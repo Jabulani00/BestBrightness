@@ -39,7 +39,7 @@ export class UpdatePage implements OnInit {
 
   ngOnInit() {
     this.getPassedData();
-    document.querySelector('body')?.classList.remove('scanner-active'); 
+
   }
   hideCard() {
     const cardElement = document.getElementById('container');
@@ -152,7 +152,7 @@ await loader.present();
       document.querySelector('body')?.classList.remove('scanner-active'); 
     }
   }
-  
+
   clearFields() {
     this.itemName = '';
     this.itemCategory = '';
