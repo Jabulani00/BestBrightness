@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Renderer2 } from '@angular/core';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { finalize } from 'rxjs/operators';
@@ -37,6 +37,7 @@ export class AddInventoryStoreroomPage implements OnInit {
 
 
   constructor(
+    private renderer: Renderer2,
     private firestore: AngularFirestore,
     private storage: AngularFireStorage,
     private loadingController: LoadingController,
@@ -73,24 +74,102 @@ export class AddInventoryStoreroomPage implements OnInit {
     return snapshot.ref.getDownloadURL();
   }
   
+  hideCard() {
+    const cardElement = document.getElementById('container');
+    if (cardElement) {
+      this.renderer.setStyle(cardElement, 'display', 'none'); // Use Renderer2's setStyle()
+    }
+  }
+showCard() {
+    const cardElement = document.getElementById('container');
+    if (cardElement) {
+      this.renderer.setStyle(cardElement, 'display', 'contents'); // Use Renderer2's setStyle()
+    }
+  }
+  async closeScanner(){
+    const result = await BarcodeScanner.stopScan(); // start scanning and wait for a result
+    // if the result has content
+    this.showCard()
+    
+    window.document.querySelector('ion-app')?.classList.remove('cameraView');
+    document.querySelector('body')?.classList.remove('scanner-active');
+   
+  }
 
-  async scanBarcode(){
+  async scanBarcode() {
+    window.document.querySelector('ion-app')?.classList.add('cameraView');
+    this.hideCard();
+    document.querySelector('body')?.classList.add('scanner-active');
     await BarcodeScanner.checkPermission({ force: true });
-  
     // make background of WebView transparent
     // note: if you are using ionic this might not be enough, check below
-   // BarcodeScanner.hideBackground();
-    
+    //BarcodeScanner.hideBackground();
     const result = await BarcodeScanner.startScan(); // start scanning and wait for a result
-  
     // if the result has content
     if (result.hasContent) {
       this.barcode = result.content;
       console.log(result.content);
-      document.querySelector('body')?.classList.remove('scanner-active'); // log the raw scanned content
+      
+      this.showCard();
+      
+      const querySnapshot = await this.firestore
+      .collection('storeroomInventory')
+      .ref.where('barcode', '==', result.content)
+      .limit(1)
+      .get();
+      window.document.querySelector('ion-app')?.classList.remove('cameraView');
+      document.querySelector('body')?.classList.remove('scanner-active');
+    if (!querySnapshot.empty) {
+      // If a product with the same barcode is found, populate the input fields
+      
+      const productData:any = querySnapshot.docs[0].data();
+      this.itemName = productData.name;
+      this.itemCategory = productData.category;
+      this.itemDescription = productData.description;
+   
+      // You can similarly populate other input fields here
+    } else {
+      this.presentToast('Product not found', 'warning');
+    }// log the raw scanned content
+      window.document.querySelector('ion-app')?.classList.remove('cameraView');
+    }
+  }
+
+  async searchProductByBarcode() {
+    if (this.barcode.trim() === '') {
+      // If the barcode input is empty, clear other input fields
+      this.clearFieldsExceptBarcode();
+      return;
+    }
+  
+    // Search for the product with the entered barcode in Firestore
+    const querySnapshot = await this.firestore
+      .collection('storeroomInventory')
+      .ref.where('barcode', '==', this.barcode.trim())
+      .limit(1)
+      .get();
+  
+    if (!querySnapshot.empty) {
+      // If a product with the entered barcode is found, populate the input fields
+      const productData:any = querySnapshot.docs[0].data();
+      this.itemName = productData.name;
+      this.itemCategory = productData.category;
+      this.itemDescription = productData.description;
+      // You can similarly populate other input fields here
+    } else {
+      // If no product with the entered barcode is found, clear other input fields
+      this.clearFieldsExceptBarcode();
+      this.presentToast('Product not found', 'warning');
     }
   }
   
+  clearFieldsExceptBarcode() {
+    // Clear all input fields except the barcode input
+    this.itemName = '';
+    this.itemCategory = '';
+    this.itemDescription = '';
+    // Clear other input fields here
+  }
   toggleMode() {
     if (this.toggleChecked) {
       this.barcode = ''; // Clear the barcode value when switching to input mode
@@ -153,28 +232,24 @@ export class AddInventoryStoreroomPage implements OnInit {
     });
     await loader.present();
   console.log("data",this.cart)
-    try {
-      // Create a slip document in Firestore
-      const slipData = {
-        date: new Date(),
-        items: this.cart.map(item => ({
-          name: item.name,
-          quantity: item.quantity,
-          category: item.category,
-          description: item.description,
-          imageUrl: item.imageUrl,
-          pickersDetails: item.pickersDetails,
-          dateOfPickup: item.dateOfPickup,
-          timeOfPickup: item.timeOfPickup,
-          barcode: item.barcode,
-          pickersDetailsEmail:this.pickersDetailsEmail,
-          phone :this.phone,
-          Cumpany:this.Cumpany
-        })),
-      };
-      await this.firestore.collection('slips').add(slipData);
-      pdfMake.vfs = pdfFonts.pdfMake.vfs;
-     // Calculate column widths based on content length
+  try {
+    // Create a slip document in Firestore
+    const slipData = {
+      date: new Date(),
+      items: this.cart.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        category: item.category,
+        description: item.description,
+        imageUrl: item.imageUrl,
+        pickersDetails: item.pickersDetails,
+        dateOfPickup: item.dateOfPickup,
+        timeOfPickup: item.timeOfPickup,
+        barcode: item.barcode,
+      })),
+    };
+    await this.firestore.collection('slips').add(slipData);
+    pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 
 // Define PDF content
@@ -182,71 +257,73 @@ export class AddInventoryStoreroomPage implements OnInit {
 // Define PDF content
 const docDefinition = {
   content: [
-      {
-          text: 'BEST BRIGHT', // Adding the company name to the header
-          style: 'companyName'
-      },
-      {
-          text: 'Invoice',
-          style: 'header'
-      },
-      {
-          text: `Date: ${new Date().toLocaleDateString()}`,
-          style: 'subheader'
-      },
-      {
-          table: {
-              headerRows: 1,
-              widths: [ 76, 76,76,76,76,76 ],
-              body: [
-                  [
-                      { text: 'Name', style: 'tableHeader' },
-                      { text: 'Category', style: 'tableHeader' },
-                      { text: 'Description', style: 'tableHeader' },
-                      { text: 'Quantity', style: 'tableHeader' },
-                      { text: 'Picker\'s Details', style: 'tableHeader' },
-                      { text: 'Barcode', style: 'tableHeader' }
-                  ],
-                  ...this.cart.map(item => [
-                      item.name,
-                      item.category,
-                      item.description,
-                      item.quantity.toString(),
-                      item.pickersDetails,
-                      item.barcode
-                  ])
-              ]
-          }
+    {
+      text: 'BEST BRIGHT', // Adding the pickersDetailsPhone name to the header
+      style: 'companyName'
+    },
+    {
+      text: 'Invoice',
+      style: 'header'
+    },
+    {
+      text: `Date: ${new Date().toLocaleDateString()}`,
+      style: 'subheader'
+    },
+    {
+      table: {
+        headerRows: 1,
+        widths: [ '*', '*', '*', '*', '*', '*' ],
+        body: [
+          [
+            { text: 'Name', style: 'tableHeader' },
+            { text: 'Category', style: 'tableHeader' },
+            { text: 'Description', style: 'tableHeader' },
+            { text: 'Quantity', style: 'tableHeader' },
+            { text: 'Picker\'s Details', style: 'tableHeader' },
+            { text: 'Barcode', style: 'tableHeader' }
+          ],
+          ...this.cart.map(item => [
+            { text: item.name, alignment: 'left' }, // Align left
+            { text: item.category, alignment: 'center' }, // Align center
+            { text: item.description, alignment: 'left' }, // Align left
+            { text: item.quantity.toString(), alignment: 'center' }, // Align center
+            { text: item.pickersDetails, alignment: 'left' }, // Align left
+            { text: item.barcode, alignment: 'center' } // Align center
+          ])
+        ]
       }
+    }
   ],
   styles: {
-      header: {
-          fontSize: 24,
-          bold: true,
-          margin: [0, 0, 0, 10],
-          alignment: 'center',
-          color: '#007bff' // Blue color for the header
-      },
-      subheader: {
-          fontSize: 14,
-          bold: true,
-          margin: [0, 10, 0, 10]
-      },
-      tableHeader: {
-          bold: true,
-          fontSize: 12,
-          color: 'black',
-          alignment: 'center'
-      },
-      companyName: { // Style for the company name
-          fontSize: 28,
-          bold: true,
-          margin: [0, 0, 0, 20], // Adjust margin to separate company name from header
-          alignment: 'center',
-          color: '#dc3545' // Red color for the company name
-      }
+    header: {
+      fontSize: 24,
+      bold: true,
+      margin: [0, 0, 0, 10],
+      alignment: 'center',
+      color: '#4caf50' // Green color for the header
+    },
+    subheader: {
+      fontSize: 14,
+      bold: true,
+      margin: [0, 10, 0, 10],
+      alignment: 'center'
+    },
+    tableHeader: {
+      bold: true,
+      fontSize: 12,
+      color: '#37474f', // Dark grey color for the table headers
+      alignment: 'center'
+    },
+    companyName: { // Style for the company name
+      fontSize: 28,
+      bold: true,
+      margin: [0, 0, 0, 20], // Adjust margin to separate company name from header
+      alignment: 'center',
+      color: '#ff5722' // Deep orange color for the company name
+    }
   }
 };
+
 
 
 
@@ -257,7 +334,6 @@ const docDefinition = {
       // Clear the cart after generating the slip
       pdfDocGenerator.open();
       this.cart = [];
-  
       // Show success toast notification
       this.presentToast('Slip generated successfully',"success");
     } catch (error) {

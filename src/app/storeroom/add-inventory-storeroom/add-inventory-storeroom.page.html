@@ -19,7 +19,7 @@
 
       <ion-item>
         <ion-label position="floating">Barcode</ion-label>
-        <ion-input type="text" [(ngModel)]="barcode" *ngIf="toggleChecked"></ion-input>
+        <ion-input type="text" [(ngModel)]="barcode"  (ionChange)="searchProductByBarcode()" *ngIf="toggleChecked"></ion-input>
         <ion-button  expand="block" (click)="scanBarcode()" *ngIf="!toggleChecked">
           <ion-icon name="barcode-outline"></ion-icon> Scan
         </ion-button>
