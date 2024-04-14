@@ -82,23 +82,22 @@ export class AddInventoryPage implements OnInit {
     await BarcodeScanner.checkPermission({ force: true });
     // make background of WebView transparent
     // note: if you are using ionic this might not be enough, check below
-    BarcodeScanner.hideBackground();
+    //BarcodeScanner.hideBackground();
     const result = await BarcodeScanner.startScan(); // start scanning and wait for a result
     // if the result has content
     if (result.hasContent) {
       this.barcode = result.content;
       console.log(result.content); // log the raw scanned content
-      this.toggleChecked=true;
-      document.querySelector('body')?.classList.remove('scanner-active');
     }
   }
+
 
   toggleMode() {
     if (this.toggleChecked) {
       this.barcode = ''; // Clear the barcode value when switching to input mode
       BarcodeScanner.showBackground();
-  BarcodeScanner.stopScan();
-  document.querySelector('body')?.classList.remove('scanner-active');
+      BarcodeScanner.stopScan();
+      document.querySelector('body')?.classList.remove('scanner-active');
     }
   }
   checkBookingDateTime(date: any, startTime: any): void {
