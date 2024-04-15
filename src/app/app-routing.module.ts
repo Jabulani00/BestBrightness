@@ -41,7 +41,7 @@ const routes: Routes = [
   },
   {
     path: 'add-inventory-storeroom',
-    loadChildren: () => import('./storeroom/add-inventory-storeroom/add-inventory-storeroom.module').then( m => m.AddInventoryStoreroomPageModule)
+    loadChildren: () => import('./add-inventory-storeroom/add-inventory-storeroom.module').then( m => m.AddInventoryStoreroomPageModule)
   },
   {
     path: 'user-profiles',
@@ -58,7 +58,8 @@ const routes: Routes = [
   {
     path: 'welcome',
     loadChildren: () => import('./welcome/welcome.module').then( m => m.WelcomePageModule)
-  },  {
+  },
+  {
     path: 'profile',
     loadChildren: () => import('./profile/profile.module').then( m => m.ProfilePageModule)
   },

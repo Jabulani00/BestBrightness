@@ -3,49 +3,48 @@ import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { finalize } from 'rxjs/operators';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
-import {
-  AlertController,
-  LoadingController,
-  ModalController,
-  ToastController,
-} from '@ionic/angular';
+import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
-import { BarcodeScannerPage } from '../barcode-scanner/barcode-scanner.page';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 const pdfMake = require('pdfmake/build/pdfmake.js');
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Browser } from '@capacitor/browser';
+
 
 @Component({
-  selector: 'app-add-inventory',
-  templateUrl: './add-inventory.page.html',
-  styleUrls: ['./add-inventory.page.scss'],
+  selector: 'app-add-inventory-storeroom',
+  templateUrl: './add-inventory-storeroom.page.html',
+  styleUrls: ['./add-inventory-storeroom.page.scss'],
 })
-export class AddInventoryPage implements OnInit {
+export class AddInventoryStoreroomPage implements OnInit {
+
   itemName: string = '';
   itemCategory: string = '';
   itemDescription: string = '';
-  itemQuantity = 0;
+  itemQuantity: number = 0;
   pickersDetails: string = '';
   dateOfPickup: string = '';
   timeOfPickup: string = '';
   barcode: string = '';
   imageBase64: any;
   imageUrl: string | null = null;
-  cart: any[] = [];
-  qrCodeIdentifire: any;
+  cart: any[] = []; 
+  toggleChecked: boolean = false; 
   currentDate: Date;
   currentTime: string;
+  phone:any;
+  Cumpany:any;
+  pickersDetailsEmail:any;
 
-  // Variable to hold the barcode value
-  toggleChecked: boolean = false;
+
 
   constructor(
     private renderer: Renderer2,
-    private modalController: ModalController,
     private firestore: AngularFirestore,
     private storage: AngularFireStorage,
     private loadingController: LoadingController,
-    private ToastController: ToastController,
-    private alertController: AlertController
+   private  ToastController: ToastController,  private alertController: AlertController,
+  
   ) {
     this.currentDate = new Date();
     this.currentTime = this.currentDate.toLocaleTimeString("en-US", {
@@ -56,13 +55,12 @@ export class AddInventoryPage implements OnInit {
   ngOnInit() {
     document.querySelector('body')?.classList.remove('scanner-active'); 
   }
-  
   async takePicture() {
     const image = await Camera.getPhoto({
       quality: 90,
       allowEditing: false,
       resultType: CameraResultType.Base64,
-      source: CameraSource.Camera,
+      source: CameraSource.Camera
     });
     this.imageBase64 = image.base64String;
   }
@@ -77,19 +75,6 @@ export class AddInventoryPage implements OnInit {
     const snapshot = await uploadTask;
     return snapshot.ref.getDownloadURL();
   }
-
-
-
-  async closeScanner(){
-    const result = await BarcodeScanner.stopScan(); // start scanning and wait for a result
-    // if the result has content
-  
-    
-    this.showCard();
-    window.document.querySelector('ion-app')?.classList.remove('cameraView');
-    document.querySelector('body')?.classList.remove('scanner-active');
-  }
-
   hideCard() {
     const cardElement = document.getElementById('container');
     if (cardElement) {
@@ -102,6 +87,17 @@ showCard() {
       this.renderer.setStyle(cardElement, 'display', 'contents'); // Use Renderer2's setStyle()
     }
   }
+  async closeScanner(){
+    const result = await BarcodeScanner.stopScan(); // start scanning and wait for a result
+    // if the result has content
+    this.showCard()
+    
+   
+    window.document.querySelector('ion-app')?.classList.remove('cameraView');
+    document.querySelector('body')?.classList.remove('scanner-active');
+   
+  }
+
   async scanBarcode() {
  
     window.document.querySelector('ion-app')?.classList.add('cameraView');
@@ -139,6 +135,61 @@ showCard() {
       this.presentToast('Product not found', 'warning');
     }// log the raw scanned content
       window.document.querySelector('ion-app')?.classList.remove('cameraView');
+    }
+  }
+  toggleMode() {
+    if (this.toggleChecked) {
+      this.barcode = ''; // Clear the barcode value when switching to input mode
+      BarcodeScanner.showBackground();
+      BarcodeScanner.stopScan();
+      document.querySelector('body')?.classList.remove('scanner-active'); 
+    }
+  }
+  
+
+
+
+  async addItem() {
+
+    this.checkBookingDateTime(this.currentDate,this.currentTime);
+
+
+    const loader = await this.loadingController.create({
+      message: 'Adding Inventory...',
+    });
+    await loader.present();
+
+    try {
+      if (this.imageBase64) {
+        this.imageUrl = await this.uploadImage(this.imageBase64);
+      }
+
+      const newItem = {
+        name: this.itemName,
+        category: this.itemCategory,
+        description: this.itemDescription,
+        imageUrl: this.imageUrl || '',
+        quantity: this.itemQuantity,
+        pickersDetails: this.pickersDetails,
+        dateOfPickup: this.dateOfPickup,
+        timeOfPickup: this.timeOfPickup,
+        barcode: this.barcode || '',
+        timestamp: new Date(),
+        location:"storeroom",
+        pickersDetailsEmail:this.pickersDetailsEmail,
+        phone :this.phone,
+        Cumpany:this.Cumpany
+      };
+      this.cart.push(newItem);
+      console.log(this.cart);
+      this.presentToast('Item added to cart','success');
+      await this.firestore.collection('storeroomInventory').add(newItem);
+      this.clearFields();
+    } catch (error) {
+      console.error('Error adding inventory:', error);
+      // Handle error
+    } finally {
+      loader.dismiss();
     }
   }
 
@@ -180,124 +231,6 @@ showCard() {
   
 
 
-  toggleMode() {
-    if (this.toggleChecked) {
-      this.barcode = ''; // Clear the barcode value when switching to input mode
-      BarcodeScanner.showBackground();
-  BarcodeScanner.stopScan();
-  document.querySelector('body')?.classList.remove('scanner-active');
-    }
-  }
-  checkBookingDateTime(date: any, startTime: any): void {
-    // Check if the date is in the past
-    if (date >= this.currentDate.toISOString().split("T")[0]) {
-      this.presentToast("date must be behind or must be current date.","warning");
-      return;
-    }
-  
-    if (!this.imageBase64){
-      this.presentToast("Capture the image of the product","warning");
-      return;
-    }
-  
-    // Check if the time is in the past
-  }
-  async addItem() {
-    let itemQuantity = 0;
-    this.checkBookingDateTime(this.currentDate,this.currentTime);
-    const loader = await this.loadingController.create({
-      message: 'Adding Inventory...',
-    });
-    await loader.present();
-
-    try {
-      if (this.imageBase64) {
-        this.imageUrl = await this.uploadImage(this.imageBase64);
-      }
-      const userEmail = await this.firestore
-        .collection('Users')
-        .ref.where('email', '==', this.pickersDetails)
-        .get();
-      console.log(userEmail);
-      if (userEmail.empty) {
-        this.presentToast('this delivery guy is not no our system',"warning");
-        console.log('this delivary guy is not no our system');
-        return;
-      }
-
-      // Check if there is an existing item with the same barcode in the storeroomInventory collection
-      const existingItemQuery = await this.firestore
-        .collection('storeroomInventory')
-        .ref.where('barcode', '==', this.barcode)
-        .get();
-      if (!existingItemQuery.empty) {
-        // Update the quantity of the existing item in the storeroomInventory collection
-        const existingItemDoc = existingItemQuery.docs[0];
-        const existingItemData: any = existingItemDoc.data();
-        if (existingItemData.quantity < this.itemQuantity) {
-          // Show an alert if the stock is insufficient
-          this.presentToast(
-            'Insufficient Stock, The stock for this item is insufficient. the are ' +
-              existingItemData.quantity +
-              ' available',"warning"
-          );
-          return;
-        }
-        const updatedQuantity = existingItemData.quantity - this.itemQuantity;
-        console.log(existingItemData.quantity);
-        console.log(updatedQuantity);
-        itemQuantity = existingItemData.quantity;
-
-        await existingItemDoc.ref.update({ quantity: updatedQuantity });
-        console.log('Storeroom Inventory Updated (Minused)');
-      } else {
-        this.presentToast(
-          'this product barcode does  not metch any on our storeroom',"warning"
-        );
-        return;
-      }
-      ///////////////////////////////////////
-      // Check if there's an existing item with the same name in the inventory collection
-      const existingItemQueryStore = await this.firestore
-        .collection('inventory')
-        .ref.where('barcode', '==', this.barcode)
-        .get();
-      if (!existingItemQueryStore.empty) {
-        // Update the quantity of the existing item in the storeroomInventory collection
-        const existingItemDoc = existingItemQuery.docs[0];
-        const existingItemData: any = existingItemDoc.data();
-        const updatedQuantity = existingItemData.quantity + this.itemQuantity;
-        this.itemQuantity += updatedQuantity;
-        await existingItemDoc.ref.update({ quantity: updatedQuantity });
-        console.log('Storeroom Inventory Updated (Plused)');
-        return;
-      }
-
-      const newItem = {
-        name: this.itemName,
-        category: this.itemCategory,
-        description: this.itemDescription,
-        imageUrl: this.imageUrl || '',
-        quantity: this.itemQuantity,
-        pickersDetails: this.pickersDetails,
-        dateOfPickup: this.dateOfPickup,
-        timeOfPickup: this.timeOfPickup,
-        barcode: this.barcode || '',
-        timestamp: new Date(),
-      };
-      this.cart.push(newItem);
-
-      this.presentToast('Item added to cart',"successfull");
-      await this.firestore.collection('inventory').add(newItem);
-      this.clearFields();
-    } catch (error) {
-      console.error('Error adding inventory:', error);
-      // Handle error
-    } finally {
-      loader.dismiss();
-    }
-  }
-
   async generateSlip() {
     const loader = await this.loadingController.create({
       message: 'Generating Slip...',
@@ -318,6 +251,9 @@ showCard() {
           dateOfPickup: item.dateOfPickup,
           timeOfPickup: item.timeOfPickup,
           barcode: item.barcode,
+          pickersDetailsEmail:this.pickersDetailsEmail,
+//pickersDetailsPhone:this.pickersDetailsPhone,
+         
         })),
       };
       await this.firestore.collection('slips').add(slipData);
@@ -401,47 +337,112 @@ const docDefinition = {
 
 
 
-    // Generate PDF
-    //pdfMake.createPdf(docDefinition).open();
-    const pdfDocGenerator = await pdfMake.createPdf(docDefinition);
-      // Clear the cart after generating the slip
-      pdfDocGenerator.open();
-      this.cart = [];
+    // // Generate PDF
+    // //pdfMake.createPdf(docDefinition).open();
+    // const pdfDocGenerator = await pdfMake.createPdf(docDefinition);
+    //   // Clear the cart after generating the slip
+    //   pdfDocGenerator.open();
+    //   this.cart = [];
   
-      // Show success toast notification
-      this.presentToast('Slip generated successfully',"success");
-    } catch (error) {
+    //   // Show success toast notification
+    //   this.presentToast('Slip generated successfully',"success");
+    // } catch (error) {
+    //   console.error('Error generating slip:', error);
+    //   // Handle error
+    // } finally {
+    //   loader.dismiss();
+    // }
+    const pdfDocGenerator = pdfMake.createPdf(docDefinition);
+    pdfDocGenerator.getBase64(async (pdfData: string) => {
+      try {
+        // Save the PDF locally
+        await this.savePDFLocally(pdfData);
+   
+        // Open the generated PDF
+       // pdfDocGenerator.open();
+   
+        // Clear the cart after generating the slip
+       //this.cart = [];
+   
+        // Show success toast notification
+        this.presentToast('Slip generated successfully', "success");
+      } catch (error) {
+        console.error('Error generating slip:', error);
+        // Handle error
+      } finally {
+        loader.dismiss();
+      }
+    });
+   } catch (error) {
       console.error('Error generating slip:', error);
       // Handle error
-    } finally {
-      loader.dismiss();
     }
-   
     
 
 
 }
 
-  clearFields() {
-    this.itemName = '';
-    this.itemCategory = '';
-    this.itemDescription = '';
-    this.itemQuantity = 0;
-    this.pickersDetails = '';
-    this.dateOfPickup = '';
-    this.timeOfPickup = '';
-    this.barcode = '';
-    this.imageBase64 = null;
-    this.imageUrl = null;
+
+clearFields() {
+  this.itemName = '';
+  this.itemCategory = '';
+  this.itemDescription = '';
+  this.itemQuantity = 0;
+  this.pickersDetails = '';
+  this.dateOfPickup = '';
+  this.timeOfPickup = '';
+  this.barcode = '';
+  this.imageBase64 = null;
+  this.imageUrl = null;
+}
+
+
+checkBookingDateTime(date: any, startTime: any): void {
+  // Check if the date is in the past
+  if (date >= this.currentDate.toISOString().split("T")[0]) {
+    this.presentToast("date must be behind or must be current date.","warning");
+    return;
   }
 
-  async presentToast(message: string,color:string) {
-    const toast = await this.ToastController.create({
-      message: message,
-      duration: 4000,
-      position: 'top',
-      color:color
-    });
-    toast.present();
+  if (!this.imageBase64){
+    this.presentToast("Capture the image of the product","warning");
+    return;
   }
+
+  // Check if the time is in the past
+}
+
+
+
+
+async presentToast(message: string,color:string) {
+  const toast = await this.ToastController.create({
+    message: message,
+    duration: 4000,
+    position: 'middle',
+    color:color
+  });
+  toast.present();
+}
+
+
+async savePDFLocally(pdfData:any){
+  try {
+    // Generate a unique file name
+    const fileName = `Download/invoice_${Date.now()}.pdf`;
+
+    // Write the PDF data to a file
+    const result = await Filesystem.writeFile({
+      path: fileName,
+      data: pdfData,
+      directory: Directory.ExternalStorage, // Choose the directory to save the file
+      encoding: Encoding.UTF8 // Specify encoding (optional)
+    });
+    await Browser.open({ url: result.uri });
+    // Log the file URI where the PDF is saved
+    console.log('PDF saved at:', result.uri);
+  } catch (error) {
+    console.error('Error saving PDF:', error);
+  }
+}
 }

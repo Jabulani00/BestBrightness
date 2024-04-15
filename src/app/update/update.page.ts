@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Renderer2 } from '@angular/core';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { finalize } from 'rxjs/operators';
@@ -28,6 +28,8 @@ export class UpdatePage implements OnInit {
   newImage :any;
 
   constructor(
+    private loadingController: LoadingController,
+    private renderer: Renderer2,
     private route: ActivatedRoute,
     private router: Router,
     private firestore: AngularFirestore,
@@ -38,10 +40,33 @@ export class UpdatePage implements OnInit {
 
   ngOnInit() {
     this.getPassedData();
-    document.querySelector('body')?.classList.remove('scanner-active'); 
+  }
+
+  hideCard() {
+    const cardElement = document.getElementById('container');
+    if (cardElement) {
+      this.renderer.setStyle(cardElement, 'display', 'none'); // Use Renderer2's setStyle()
+    }
+  }
+showCard() {
+    const cardElement = document.getElementById('container');
+    if (cardElement) {
+      this.renderer.setStyle(cardElement, 'display', 'contents'); // Use Renderer2's setStyle()
+    }
+  }
+  async closeScanner(){
+    this.showCard();
+    const result = await BarcodeScanner.stopScan(); // start scanning and wait for a result
+    // if the result has content
+  
+    window.document.querySelector('ion-app')?.classList.remove('cameraView');
+    document.querySelector('body')?.classList.remove('scanner-active');
   }
 
   async scanBarcode() {
+    this.hideCard();
+   
+    window.document.querySelector('ion-app')?.classList.add('cameraView');
     document.querySelector('body')?.classList.add('scanner-active');
     await BarcodeScanner.checkPermission({ force: true });
     // make background of WebView transparent
@@ -52,6 +77,9 @@ export class UpdatePage implements OnInit {
     if (result.hasContent) {
       this.barcode = result.content;
       console.log(result.content); // log the raw scanned content
+      this.showCard()
+      window.document.querySelector('ion-app')?.classList.remove('cameraView');
+      document.querySelector('body')?.classList.remove('scanner-active');
     }
   }
 
@@ -67,94 +95,111 @@ export class UpdatePage implements OnInit {
   }
   async updateItem() {
 
-
-if(this.imageBase64){
-  await this.deleteFileIfExists.call(this, this.productInfor.imageUrl);
-  this.imageUrl = await this.uploadImage(this.imageBase64);
-}
-
-
-   
-    // Check if there's an existing item with the same name in the inventory collection
-    const existingItemQueryStore = await this.firestore
-      .collection('inventory')
-      .ref.where('barcode', '==', this.barcode)
-      .get();
-    if (!existingItemQueryStore.empty) {
-      // Update the quantity of the existing item in the storeroomInventory collection
-      const existingItemDoc = existingItemQueryStore.docs[0];
-      const existingItemData: any = existingItemDoc.data();
-      await existingItemDoc.ref.update({
-        name: this.itemName,
-        category: this.itemCategory,
-        description: this.itemDescription,
-        barcode:this.barcode,
-        quantity: this.itemQuantity,
-        timestamp: new Date(), 
-        imageUrl: this.imageUrl
-      
-        // Add timestamp });
-        //console.log("Storeroom Inventory Updated (Plused)");
+    if (this.imageBase64) {
+      await this.deleteFileIfExists.call(this, this.productInfor.imageUrl);
+      this.imageUrl = await this.uploadImage(this.imageBase64);
+    } else {
+      // Keep the current URL if no new image is captured
+      this.imageUrl = this.productInfor.imageUrl;
+    }
+  
+  const loader = await this.loadingController.create({
+     message: 'updating..',
+    cssClass: 'custom-loader-class',
+  
+  
+  });
+  await loader.present();
+     
+      // Check if there's an existing item with the same name in the inventory collection
+      const existingItemQueryStore = await this.firestore
+        .collection('inventory')
+        .ref.where('barcode', '==', this.barcode)
+        .get();
+      if (!existingItemQueryStore.empty) {
+        // Update the quantity of the existing item in the storeroomInventory collection
+        const existingItemDoc = existingItemQueryStore.docs[0];
+        const existingItemData: any = existingItemDoc.data();
+        await existingItemDoc.ref.update({
+          name: this.itemName,
+          category: this.itemCategory,
+          description: this.itemDescription,
+          barcode:this.barcode,
+          quantity: this.itemQuantity,
+          timestamp: new Date(), 
+          imageUrl: this.imageUrl
+        
+          // Add timestamp });
+          //console.log("Storeroom Inventory Updated (Plused)");
+        });
+        this.clearAllFields();
+        loader.dismiss();
+      }
+    }
+    clearAllFields() {
+      this.itemName = '';
+      this.itemCategory = '';
+      this.itemDescription = '';
+      this.itemQuantity = 0;
+      this.imageUrl = '';
+      this.newImage='';
+    }
+    toggleMode() {
+      if (this.toggleChecked) {
+        this.barcode = ''; // Clear the barcode value when switching to input mode
+        BarcodeScanner.showBackground();
+        BarcodeScanner.stopScan();
+        document.querySelector('body')?.classList.remove('scanner-active'); 
+      }
+    }
+    clearFields() {
+      this.itemName = '';
+      this.itemCategory = '';
+      this.itemDescription = '';
+      this.itemQuantity = 0;
+      this.selectedFile = null;
+    }
+  
+    onFileSelected(event: Event) {
+      const inputElement = event.target as HTMLInputElement;
+      if (inputElement.files) {
+        this.selectedFile = inputElement.files[0];
+      }
+    }
+  
+    async takePicture() {
+      const image = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.Base64,
+        source: CameraSource.Camera,
       });
+      this.imageBase64 = image.base64String;
+      this.newImage = `data:image/jpeg;base64,${image.base64String}`;
+    }
+  
+    async uploadImage(file: string) {
+      const fileName = Date.now().toString();
+      const filePath = `images/${fileName}`;
+      const fileRef = this.fireStorage.ref(filePath);
+      const uploadTask = fileRef.putString(file, 'base64', {
+        contentType: 'image/jpeg',
+      });
+      const snapshot = await uploadTask;
+      return snapshot.ref.getDownloadURL();
+    }
+  
+    async getPassedData() {
+      if (this.router.getCurrentNavigation()?.extras.state) {
+        this.productInfor = await this.router.getCurrentNavigation()?.extras.state;
+        console.log(this.productInfor);
+        this.barcode = this.productInfor.barcode; // Variable to hold the ID of the inventory item
+        this.itemName = this.productInfor.name;
+        this.itemCategory = this.productInfor.category;
+        this.itemDescription = this.productInfor.description;
+        this.itemQuantity = this.productInfor.quantity;
+        this.newImage = this.productInfor.imageUrl;
+      this.imageUrl =this.productInfor.imageUrl
+      }
     }
   }
-
-  toggleMode() {
-    if (this.toggleChecked) {
-      this.barcode = ''; // Clear the barcode value when switching to input mode
-      BarcodeScanner.showBackground();
-      BarcodeScanner.stopScan();
-      document.querySelector('body')?.classList.remove('scanner-active'); 
-    }
-  }
-  clearFields() {
-    this.itemName = '';
-    this.itemCategory = '';
-    this.itemDescription = '';
-    this.itemQuantity = 0;
-    this.selectedFile = null;
-  }
-
-  onFileSelected(event: Event) {
-    const inputElement = event.target as HTMLInputElement;
-    if (inputElement.files) {
-      this.selectedFile = inputElement.files[0];
-    }
-  }
-
-  async takePicture() {
-    const image = await Camera.getPhoto({
-      quality: 90,
-      allowEditing: false,
-      resultType: CameraResultType.Base64,
-      source: CameraSource.Camera,
-    });
-    this.imageBase64 = image.base64String;
-    this.newImage = `data:image/jpeg;base64,${image.base64String}`;
-  }
-
-  async uploadImage(file: string) {
-    const fileName = Date.now().toString();
-    const filePath = `images/${fileName}`;
-    const fileRef = this.fireStorage.ref(filePath);
-    const uploadTask = fileRef.putString(file, 'base64', {
-      contentType: 'image/jpeg',
-    });
-    const snapshot = await uploadTask;
-    return snapshot.ref.getDownloadURL();
-  }
-
-  async getPassedData() {
-    if (this.router.getCurrentNavigation()?.extras.state) {
-      this.productInfor = await this.router.getCurrentNavigation()?.extras.state;
-      console.log(this.productInfor);
-      this.barcode = this.productInfor.barcode; // Variable to hold the ID of the inventory item
-      this.itemName = this.productInfor.name;
-      this.itemCategory = this.productInfor.category;
-      this.itemDescription = this.productInfor.description;
-      this.itemQuantity = this.productInfor.quantity;
-      this.newImage = this.productInfor.imageUrl;
-    this.imageUrl =this.productInfor.imageUrl
-    }
-  }
-}
