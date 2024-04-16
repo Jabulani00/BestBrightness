@@ -184,8 +184,8 @@ showCard() {
     if (this.toggleChecked) {
       this.barcode = ''; // Clear the barcode value when switching to input mode
       BarcodeScanner.showBackground();
-  BarcodeScanner.stopScan();
-  document.querySelector('body')?.classList.remove('scanner-active');
+      BarcodeScanner.stopScan();
+      document.querySelector('body')?.classList.remove('scanner-active');
     }
   }
   checkBookingDateTime(date: any, startTime: any): void {

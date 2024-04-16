@@ -26,10 +26,9 @@ export class UpdatePage implements OnInit {
   imageUrl: any;
   imageInfor:any;
   newImage :any;
+  loadingController: any;
 
   constructor(
-    private loadingController: LoadingController,
-    private renderer: Renderer2,
     private route: ActivatedRoute,
     private router: Router,
     private firestore: AngularFirestore,
@@ -40,33 +39,10 @@ export class UpdatePage implements OnInit {
 
   ngOnInit() {
     this.getPassedData();
-  }
-
-  hideCard() {
-    const cardElement = document.getElementById('container');
-    if (cardElement) {
-      this.renderer.setStyle(cardElement, 'display', 'none'); // Use Renderer2's setStyle()
-    }
-  }
-showCard() {
-    const cardElement = document.getElementById('container');
-    if (cardElement) {
-      this.renderer.setStyle(cardElement, 'display', 'contents'); // Use Renderer2's setStyle()
-    }
-  }
-  async closeScanner(){
-    this.showCard();
-    const result = await BarcodeScanner.stopScan(); // start scanning and wait for a result
-    // if the result has content
-  
-    window.document.querySelector('ion-app')?.classList.remove('cameraView');
-    document.querySelector('body')?.classList.remove('scanner-active');
+    document.querySelector('body')?.classList.remove('scanner-active'); 
   }
 
   async scanBarcode() {
-    this.hideCard();
-   
-    window.document.querySelector('ion-app')?.classList.add('cameraView');
     document.querySelector('body')?.classList.add('scanner-active');
     await BarcodeScanner.checkPermission({ force: true });
     // make background of WebView transparent
@@ -77,9 +53,6 @@ showCard() {
     if (result.hasContent) {
       this.barcode = result.content;
       console.log(result.content); // log the raw scanned content
-      this.showCard()
-      window.document.querySelector('ion-app')?.classList.remove('cameraView');
-      document.querySelector('body')?.classList.remove('scanner-active');
     }
   }
 
@@ -93,7 +66,8 @@ showCard() {
       }
     }
   }
-  async updateItem() {
+
+async updateItem() {
 
     if (this.imageBase64) {
       await this.deleteFileIfExists.call(this, this.productInfor.imageUrl);

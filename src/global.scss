@@ -27,8 +27,9 @@
 
 
 body.scanner-active {
-    --background: transparent;
-    --ion-background-color: transparent;
+    background: transparent none !important;
+  --background: transparent none !important;
+  --ion-background-color: none;
   }
 
   ion-app.cameraView,
@@ -39,3 +40,5 @@ body.scanner-active {
     --background: transparent none !important;
     --ion-background-color: none;
   }
+
+  
