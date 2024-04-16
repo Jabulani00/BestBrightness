@@ -29,6 +29,7 @@ export class UpdatePage implements OnInit {
   loadingController: any;
 
   constructor(
+    private renderer: Renderer2,
     private route: ActivatedRoute,
     private router: Router,
     private firestore: AngularFirestore,
@@ -161,6 +162,27 @@ async updateItem() {
       });
       const snapshot = await uploadTask;
       return snapshot.ref.getDownloadURL();
+    }
+    async closeScanner(){
+      this.showCard();
+      const result = await BarcodeScanner.stopScan(); // start scanning and wait for a result
+      // if the result has content
+    
+      window.document.querySelector('ion-app')?.classList.remove('cameraView');
+      document.querySelector('body')?.classList.remove('scanner-active');
+    }
+
+    hideCard() {
+      const cardElement = document.getElementById('container');
+      if (cardElement) {
+        this.renderer.setStyle(cardElement, 'display', 'none'); // Use Renderer2's setStyle()
+      }
+    }
+  showCard() {
+      const cardElement = document.getElementById('container');
+      if (cardElement) {
+        this.renderer.setStyle(cardElement, 'display', 'contents'); // Use Renderer2's setStyle()
+      }
     }
   
     async getPassedData() {
