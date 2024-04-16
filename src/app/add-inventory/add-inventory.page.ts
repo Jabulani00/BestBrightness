@@ -10,7 +10,8 @@ import {
   ToastController,
 } from '@ionic/angular';
 import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
-import { BarcodeScannerPage } from '../barcode-scanner/barcode-scanner.page';
+import { debounceTime } from 'rxjs/operators';
+
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 const pdfMake = require('pdfmake/build/pdfmake.js');
 
@@ -37,6 +38,7 @@ export class AddInventoryPage implements OnInit {
 
   // Variable to hold the barcode value
   toggleChecked: boolean = false;
+  inventoryItems: any;;
 
   constructor(
     private renderer: Renderer2,
@@ -51,6 +53,7 @@ export class AddInventoryPage implements OnInit {
     this.currentTime = this.currentDate.toLocaleTimeString("en-US", {
       hour12: false,
     });
+  
   }
 
   ngOnInit() {
@@ -78,6 +81,44 @@ export class AddInventoryPage implements OnInit {
     return snapshot.ref.getDownloadURL();
   }
 
+ 
+  
+  async searchProductByBarcode() {
+    if (this.barcode.trim() === '') {
+      // If the barcode input is empty, clear other input fields
+      this.clearFieldsExceptBarcode();
+      return;
+    }
+  
+    // Search for the product with the entered barcode in Firestore
+    const querySnapshot = await this.firestore
+      .collection('storeroomInventory')
+      .ref.where('barcode', '==', this.barcode.trim())
+      .limit(1)
+      .get();
+  
+    if (!querySnapshot.empty) {
+      // If a product with the entered barcode is found, populate the input fields
+      const productData:any = querySnapshot.docs[0].data();
+      this.itemName = productData.name;
+      this.itemCategory = productData.category;
+      this.itemDescription = productData.description;
+      // You can similarly populate other input fields here
+    } else {
+      // If no product with the entered barcode is found, clear other input fields
+      this.clearFieldsExceptBarcode();
+      this.presentToast('Product not found', 'warning');
+    }
+  }
+  
+  clearFieldsExceptBarcode() {
+    // Clear all input fields except the barcode input
+    this.itemName = '';
+    this.itemCategory = '';
+    this.itemDescription = '';
+    // Clear other input fields here
+  }
+  
 
 
   async closeScanner(){
@@ -142,50 +183,14 @@ showCard() {
     }
   }
 
-  async searchProductByBarcode() {
-    if (this.barcode.trim() === '') {
-      // If the barcode input is empty, clear other input fields
-      this.clearFieldsExceptBarcode();
-      return;
-    }
-  
-    // Search for the product with the entered barcode in Firestore
-    const querySnapshot = await this.firestore
-      .collection('storeroomInventory')
-      .ref.where('barcode', '==', this.barcode.trim())
-      .limit(1)
-      .get();
-  
-    if (!querySnapshot.empty) {
-      // If a product with the entered barcode is found, populate the input fields
-      const productData:any = querySnapshot.docs[0].data();
-      this.itemName = productData.name;
-      this.itemCategory = productData.category;
-      this.itemDescription = productData.description;
-      // You can similarly populate other input fields here
-    } else {
-      // If no product with the entered barcode is found, clear other input fields
-      this.clearFieldsExceptBarcode();
-      this.presentToast('Product not found', 'warning');
-    }
-  }
-  
-  clearFieldsExceptBarcode() {
-    // Clear all input fields except the barcode input
-    this.itemName = '';
-    this.itemCategory = '';
-    this.itemDescription = '';
-    // Clear other input fields here
-  }
-  
 
-
+  
   toggleMode() {
     if (this.toggleChecked) {
       this.barcode = ''; // Clear the barcode value when switching to input mode
       BarcodeScanner.showBackground();
-      BarcodeScanner.stopScan();
-      document.querySelector('body')?.classList.remove('scanner-active');
+  BarcodeScanner.stopScan();
+  document.querySelector('body')?.classList.remove('scanner-active');
     }
   }
   checkBookingDateTime(date: any, startTime: any): void {
@@ -421,6 +426,7 @@ const docDefinition = {
 
 
 }
+
 
   clearFields() {
     this.itemName = '';
