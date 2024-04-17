@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
 import { LoadingController, NavController, ToastController } from '@ionic/angular';
+///import { LoadingController, NavController, ToastController } from '@ionic/angular';
 
 
 @Component({
@@ -28,8 +29,9 @@ export class UpdatePage implements OnInit {
   newImage :any;
 
   constructor(
-    private loadingController: LoadingController,
     private renderer: Renderer2,
+    private loadingController: LoadingController,
+    private route: ActivatedRoute,
     private router: Router,
     private firestore: AngularFirestore,
     private fireStorage: AngularFireStorage
@@ -39,8 +41,8 @@ export class UpdatePage implements OnInit {
 
   ngOnInit() {
     this.getPassedData();
-
   }
+  
   hideCard() {
     const cardElement = document.getElementById('container');
     if (cardElement) {
@@ -104,9 +106,9 @@ async updateItem() {
   }
 
 const loader = await this.loadingController.create({
-   message: 'updating...',
+  // message: 'Logging in...',
   cssClass: 'custom-loader-class',
-
+  spinner:"dots"
 });
 await loader.present();
    
@@ -143,7 +145,6 @@ await loader.present();
     this.imageUrl = '';
     this.newImage='';
   }
-
   toggleMode() {
     if (this.toggleChecked) {
       this.barcode = ''; // Clear the barcode value when switching to input mode
@@ -152,7 +153,6 @@ await loader.present();
       document.querySelector('body')?.classList.remove('scanner-active'); 
     }
   }
-
   clearFields() {
     this.itemName = '';
     this.itemCategory = '';
