@@ -10,7 +10,8 @@ import {
   ToastController,
 } from '@ionic/angular';
 import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
-import { debounceTime } from 'rxjs/operators';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { FileOpener, FileOpenerOptions } from '@capacitor-community/file-opener';
 
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 const pdfMake = require('pdfmake/build/pdfmake.js');
@@ -332,11 +333,10 @@ showCard() {
 
 // Define PDF content
 // Define PDF content
-// Define PDF content
 const docDefinition = {
   content: [
     {
-      text: 'BEST BRIGHT', // Adding the pickersDetailsPhone name to the header
+      text: 'BEST BRIGHT', // Adding the company name to the header
       style: 'companyName'
     },
     {
@@ -347,30 +347,39 @@ const docDefinition = {
       text: `Date: ${new Date().toLocaleDateString()}`,
       style: 'subheader'
     },
-    {
-      table: {
-        headerRows: 1,
-        widths: [ '*', '*', '*', '*', '*', '*' ],
-        body: [
-          [
-            { text: 'Name', style: 'tableHeader' },
-            { text: 'Category', style: 'tableHeader' },
-            { text: 'Description', style: 'tableHeader' },
-            { text: 'Quantity', style: 'tableHeader' },
-            { text: 'Picker\'s Details', style: 'tableHeader' },
-            { text: 'Barcode', style: 'tableHeader' }
-          ],
-          ...this.cart.map(item => [
-            { text: item.name, alignment: 'left' }, // Align left
-            { text: item.category, alignment: 'center' }, // Align center
-            { text: item.description, alignment: 'left' }, // Align left
-            { text: item.quantity.toString(), alignment: 'center' }, // Align center
-            { text: item.pickersDetails, alignment: 'left' }, // Align left
-            { text: item.barcode, alignment: 'center' } // Align center
-          ])
-        ]
-      }
-    }
+    // Iterate over each item in the cart and create a simplified slip layout
+    ...this.cart.flatMap((item, index) => [
+      {
+        columns: [
+          // Item details
+          {
+            width: 'auto',
+            text: [
+              { text: 'Name: ', bold: true },
+              item.name,
+              '\n',
+              { text: 'Category: ', bold: true },
+              item.category,
+              '\n',
+              { text: 'Description: ', bold: true },
+              item.description,
+              '\n',
+              { text: 'Quantity: ', bold: true },
+              item.quantity.toString(),
+              '\n',
+              { text: 'Picker\'s Details: ', bold: true },
+              item.pickersDetails,
+              '\n',
+              { text: 'Barcode: ', bold: true },
+              item.barcode,
+            ]
+          }
+        ],
+        margin: [0, 10] // Add some margin between each item
+      },
+      // Add a separator between items, except for the last item
+      index < this.cart.length - 1 ? { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 595, y2: 5, lineWidth: 1 }] } : null
+    ])
   ],
   styles: {
     header: {
@@ -384,12 +393,6 @@ const docDefinition = {
       fontSize: 14,
       bold: true,
       margin: [0, 10, 0, 10],
-      alignment: 'center'
-    },
-    tableHeader: {
-      bold: true,
-      fontSize: 12,
-      color: '#37474f', // Dark grey color for the table headers
       alignment: 'center'
     },
     companyName: { // Style for the company name
@@ -406,26 +409,49 @@ const docDefinition = {
 
 
 
-    // Generate PDF
-    //pdfMake.createPdf(docDefinition).open();
-    const pdfDocGenerator = await pdfMake.createPdf(docDefinition);
-      // Clear the cart after generating the slip
-      pdfDocGenerator.open();
-      this.cart = [];
-  
-      // Show success toast notification
-      this.presentToast('Slip generated successfully',"success");
-    } catch (error) {
-      console.error('Error generating slip:', error);
-      // Handle error
-    } finally {
-      loader.dismiss();
-    }
-   
-    
+const pdfDoc =await pdfMake.createPdf(docDefinition);
 
+// Generate the PDF as base64 data
+pdfDoc.getBase64(async (data:any) => {
+  // Save the PDF file locally on the device
+  try {
+    // Generate a random file name for the PDF
+  const fileName = 'bestBrightness/'+`${new Date().toISOString()}`+'_store.pdf';
 
+    // Write the PDF data to the device's data directory
+   const result= await Filesystem.writeFile({
+      path: fileName,
+      data: data,
+      directory: Directory.Documents,
+      recursive:true
+    });
+   // await FileOpener.open(`${Result.uri}`,'application/pdf');
+    // Define options for opening the PDF file
+    const options: FileOpenerOptions = {
+      filePath: `${result.uri}`,
+      contentType: 'application/pdf', // Mime type of the file
+      openWithDefault: true, // Open with the default application
+    };
+
+    // Use FileOpener to open the PDF file
+
+    await FileOpener.open(options);
+    loader.dismiss();
+  } catch (error:any) {
+    loader.dismiss();
+    alert(error.message +"  "+error);
+    console.error('Error saving or opening PDF:', error);
+  }
+});
+
+alert('done');
+} catch (error) {
+loader.dismiss();
+console.error('Error generating slip:', error);
+// Handle error
 }
+}
+
 
 
   clearFields() {
