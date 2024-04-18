@@ -21,28 +21,28 @@
   </ion-segment>
 
   <div class="grid-container">
-    <ion-card (click)="navigateToAddInventory()" class="menu-card self-improvement">
+    <ion-card  routerLink="/add-inventory"  class="menu-card self-improvement">
       <ion-img src="assets/add.jpg"></ion-img>
       <ion-card-header>
         Add Inventory
       </ion-card-header>
     </ion-card>
 
-    <ion-card (click)="navigateToUpdateInventory()" class="menu-card business-ideas">
+    <ion-card routerLink="/view" class="menu-card business-ideas">
       <ion-img src="assets/update.jpg"></ion-img>
       <ion-card-header>
         Update Inventory
       </ion-card-header>
     </ion-card>
 
-    <ion-card (click)="navigateToPickupInventory()" class="menu-card business-ideas">
+    <ion-card routerLink="/add-inventory-storeroom" class="menu-card business-ideas">
       <ion-img src="assets/pick.jpg"></ion-img>
       <ion-card-header>
        Add Inventory Storeroom
       </ion-card-header>
     </ion-card>
 
-    <ion-card (click)="navigateToDeliverInventory()" class="menu-card business-ideas">
+    <ion-card  routerLink="/analytics" class="menu-card business-ideas">
       <ion-img src="assets/del.jpg"></ion-img>
       <ion-card-header>
         Analytics
