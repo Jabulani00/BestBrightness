@@ -305,6 +305,11 @@ showCard() {
   }
 
   async generateSlip() {
+
+    if(!this.cart.length){
+
+      return
+    }
     const loader = await this.loadingController.create({
       message: 'Generating Slip...',
     });
@@ -416,7 +421,7 @@ pdfDoc.getBase64(async (data:any) => {
   // Save the PDF file locally on the device
   try {
     // Generate a random file name for the PDF
-  const fileName = `bestBrightness/${Date.now()}_store.pdf.pdf`;
+  const fileName = `bestBrightness/${Date.now().toLocaleString}_store.pdf.pdf`;
 
 
     // Write the PDF data to the device's data directory
@@ -438,6 +443,7 @@ pdfDoc.getBase64(async (data:any) => {
 
     await FileOpener.open(options);
     loader.dismiss();
+    this.cart=[];
   } catch (error:any) {
     loader.dismiss();
     alert(error.message +"  "+error);
