@@ -286,8 +286,12 @@ showCard() {
         const existingItemDoc2 = existingItemQueryStore.docs[0];
         const existingItemData2: any = existingItemDoc2.data();
        let updatedQuantity = existingItemData2.quantity + this.itemQuantity;
-        updatedQuantity += this.itemQuantity;
-        await existingItemDoc2.ref.update({ quantity: updatedQuantity });
+       // updatedQuantity += this.itemQuantity;
+        await existingItemDoc2.ref.update({
+          name: this.itemName,
+          category: this.itemCategory,
+           description: this.itemDescription,
+           quantity: updatedQuantity });
         this.cart.push(newItem);
         console.log('Storeroom Inventory Updated (Plused)');
         this.clearFields();
