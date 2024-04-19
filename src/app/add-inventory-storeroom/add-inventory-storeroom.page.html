@@ -11,7 +11,8 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-card id="container">
+  <ion-card id="container"
+  >  <img *ngIf="imageBase64 || imageUrl" [src]="imageBase64 ? 'data:image/jpeg;base64,' + imageBase64 : imageUrl" alt="Image" style="max-width: 100%; height: auto; margin-top: 10px;">
     <ion-card-header>
       Add Inventory Item
     </ion-card-header>

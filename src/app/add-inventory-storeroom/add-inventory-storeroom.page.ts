@@ -35,6 +35,7 @@ export class AddInventoryStoreroomPage implements OnInit {
   phone:any;
   Cumpany:any;
   pickersDetailsEmail:any;
+  timestamp: string;
 
 
 
@@ -46,6 +47,7 @@ export class AddInventoryStoreroomPage implements OnInit {
    private  ToastController: ToastController,  private alertController: AlertController,
   
   ) {
+    this.timestamp=new Date().toLocaleString();
     this.currentDate = new Date();
     this.currentTime = this.currentDate.toLocaleTimeString("en-US", {
       hour12: false,
@@ -129,6 +131,7 @@ showCard() {
       this.itemName = productData.name;
       this.itemCategory = productData.category;
       this.itemDescription = productData.description;
+      this.imageUrl=productData.imageUrl;
    
       // You can similarly populate other input fields here
     } else {
@@ -251,6 +254,7 @@ showCard() {
       this.itemName = productData.name;
       this.itemCategory = productData.category;
       this.itemDescription = productData.description;
+      this.imageUrl=productData.imageUrl;
       // You can similarly populate other input fields here
     } else {
       // If no product with the entered barcode is found, clear other input fields
@@ -283,7 +287,7 @@ showCard() {
   
       // Create a slip document in Firestore
       const slipData = {
-        date: new Date(),
+        date: this.timestamp,
         items: this.cart.map(item => ({
           name: item.name,
           quantity: item.quantity,
@@ -359,20 +363,19 @@ const docDefinition = {
       fontSize: 24,
       bold: true,
       margin: [0, 0, 0, 10],
-      alignment: 'center',
+      
       color: '#4caf50' // Green color for the header
     },
     subheader: {
       fontSize: 14,
       bold: true,
       margin: [0, 10, 0, 10],
-      alignment: 'center'
+   
     },
     companyName: { // Style for the company name
       fontSize: 28,
       bold: true,
-      margin: [0, 0, 0, 20], // Adjust margin to separate company name from header
-      alignment: 'center',
+      margin: [0, 0, 0, 2], // Adjust margin to separate company name from header
       color: '#ff5722' // Deep orange color for the company name
     }
   }
@@ -434,8 +437,6 @@ clearFields() {
   this.itemDescription = '';
   this.itemQuantity = 0;
   this.pickersDetails = '';
-  this.dateOfPickup = '';
-  this.timeOfPickup = '';
   this.barcode = '';
   this.imageBase64 = null;
   this.imageUrl = null;
