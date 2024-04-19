@@ -178,7 +178,7 @@ showCard() {
    
       // You can similarly populate other input fields here
     } else {
-      this.presentToast('Product not found', 'warning');
+      //this.presentToast('Product not found', 'warning');
     }// log the raw scanned content
       window.document.querySelector('ion-app')?.classList.remove('cameraView');
     }
@@ -209,6 +209,19 @@ showCard() {
     // Check if the time is in the past
   }
   async addItem() {
+    const newItem = {
+      name: this.itemName,
+      category: this.itemCategory,
+      description: this.itemDescription,
+      imageUrl: this.imageUrl || '',
+      quantity: this.itemQuantity,
+      pickersDetails: this.pickersDetails,
+      dateOfPickup: this.dateOfPickup,
+      timeOfPickup: this.timeOfPickup,
+      barcode: this.barcode || '',
+      timestamp: new Date(),
+    };
+
     let itemQuantity = 0;
     this.checkBookingDateTime(this.currentDate,this.currentTime);
     const loader = await this.loadingController.create({
@@ -270,27 +283,17 @@ showCard() {
         .get();
       if (!existingItemQueryStore.empty) {
         // Update the quantity of the existing item in the storeroomInventory collection
-        const existingItemDoc = existingItemQuery.docs[0];
-        const existingItemData: any = existingItemDoc.data();
-        const updatedQuantity = existingItemData.quantity + this.itemQuantity;
+        const existingItemDoc2 = existingItemQueryStore.docs[0];
+        const existingItemData2: any = existingItemDoc2.data();
+        const updatedQuantity = existingItemData2.quantity + this.itemQuantity;
         this.itemQuantity += updatedQuantity;
-        await existingItemDoc.ref.update({ quantity: updatedQuantity });
+        await existingItemDoc2.ref.update({ quantity: updatedQuantity });
+        this.cart.push(newItem);
         console.log('Storeroom Inventory Updated (Plused)');
         return;
       }
 
-      const newItem = {
-        name: this.itemName,
-        category: this.itemCategory,
-        description: this.itemDescription,
-        imageUrl: this.imageUrl || '',
-        quantity: this.itemQuantity,
-        pickersDetails: this.pickersDetails,
-        dateOfPickup: this.dateOfPickup,
-        timeOfPickup: this.timeOfPickup,
-        barcode: this.barcode || '',
-        timestamp: new Date(),
-      };
+      
       this.cart.push(newItem);
 
       this.presentToast('Item added to cart',"successfull");
