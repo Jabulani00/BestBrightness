@@ -288,6 +288,10 @@ showCard() {
       // Create a slip document in Firestore
       const slipData = {
         date: this.timestamp,
+        location:"storeroom",
+       // company:this.company,
+        pickersDetailsEmail:this.pickersDetailsEmail,
+       //pickersDetailsPhone:this.pickersDetailsPhone,
         items: this.cart.map(item => ({
           name: item.name,
           quantity: item.quantity,
@@ -322,6 +326,10 @@ const docDefinition = {
     },
     {
       text: `Date: ${new Date().toLocaleDateString()}`,
+      style: 'subheader'
+    },
+    {
+      text: `Date: ${slipData.pickersDetailsEmail}`,
       style: 'subheader'
     },
     // Iterate over each item in the cart and create a simplified slip layout
