@@ -210,7 +210,6 @@ showCard() {
         return 
         }
 
-
       this.cart.push(newItem);
       console.log(this.cart);
       this.presentToast('Item added to cart','success');
