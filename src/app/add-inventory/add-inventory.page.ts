@@ -290,6 +290,7 @@ showCard() {
         await existingItemDoc2.ref.update({ quantity: updatedQuantity });
         this.cart.push(newItem);
         console.log('Storeroom Inventory Updated (Plused)');
+        this.clearFields();
         return;
       }
 

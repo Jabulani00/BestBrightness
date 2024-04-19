@@ -180,6 +180,37 @@ showCard() {
         phone :this.phone,
         Cumpany:this.Cumpany
       };
+
+
+
+      const querySnapshot = await this.firestore
+      .collection('storeroomInventory')
+      .ref.where('barcode', '==', this.barcode.trim())
+      .limit(1)
+      .get();
+
+
+      if (!querySnapshot.empty) {
+        // If a product with the entered barcode is found, populate the input fields
+        const productData:any = querySnapshot.docs[0].data();
+        const docId:any= querySnapshot.docs[0].id;
+        console.log(productData.quantity );
+      
+        this.firestore.collection('storeroomInventory').doc(docId).update({
+          name: this.itemName,
+          category: this.itemCategory,
+          description: this.itemDescription,
+          imageUrl: this.imageUrl || '',
+          quantity: (productData.quantity + this.itemQuantity)
+         });
+ 
+        console.log("updated and added");
+        this.presentToast('Item added to cart','success');
+        this.clearFields();
+        return 
+        }
+
+
       this.cart.push(newItem);
       console.log(this.cart);
       this.presentToast('Item added to cart','success');
@@ -192,6 +223,14 @@ showCard() {
       loader.dismiss();
     }
   }
+
+
+
+
+
+
+
+
 
   async searchProductByBarcode() {
     if (this.barcode.trim() === '') {
