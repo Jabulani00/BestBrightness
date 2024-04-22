@@ -1,6 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>add-inventory-storeroom</ion-title>
+    <ion-title>Incoming Stock</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="closeScanner()">
         <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -52,6 +52,10 @@
         <ion-input type="number" [(ngModel)]="itemQuantity"></ion-input>
       </ion-item>
       <ion-item>
+        <ion-label position="floating">Product Size</ion-label>
+        <ion-input type="text" [(ngModel)]="sizeProduct"></ion-input>
+      </ion-item>
+      <ion-item>
         <ion-label position="floating">Picker Name</ion-label>
         <ion-input type="text" [(ngModel)]="pickersDetails"></ion-input>
       </ion-item>
@@ -64,7 +68,7 @@
         <ion-input type="text" [(ngModel)]="phone"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Cumpany</ion-label>
+        <ion-label position="floating">Company</ion-label>
         <ion-input type="text" [(ngModel)]="Cumpany"></ion-input>
       </ion-item>
       <ion-item>

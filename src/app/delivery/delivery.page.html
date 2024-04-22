@@ -1,30 +1,62 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-segment color="success" value="favorites">
+  <ion-toolbar color="primary">
+    <ion-segment value="favorites">
       <ion-segment-button routerLink="/analytics" value="all">
-        <ion-label>Analytics</ion-label>
+        <ion-label class="ion-text-capitalize">Analytics</ion-label>
       </ion-segment-button>
       <ion-segment-button value="favorites">
-        <ion-label>Invoice Slip</ion-label>
+        <ion-label class="ion-text-capitalize">Invoice Slip</ion-label>
       </ion-segment-button>
     </ion-segment>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content class="ion-padding">
   <ion-list>
     <ion-item *ngFor="let slip of slips">
-      <ion-card *ngFor="let item of slip.items">
-        <ion-card-header class="card-header">
-          <ion-card-title>{{ item.name }}</ion-card-title>
+      <ion-card class="ion-no-margin">
+        <ion-card-header class="ion-no-padding">
+          <ion-item lines="none">
+            <ion-icon name="receipt-outline" color="primary" slot="start"></ion-icon>
+            <ion-label color="primary">Slip Details</ion-label>
+          </ion-item>
         </ion-card-header>
         <ion-card-content>
-          <p class="item-details">Quantity: {{ item.quantity }}</p>
-          <p class="item-details">Category: {{ item.category }}</p>
-          <p class="item-details">Barcode: {{ item.barcode }}</p>
-          <p class="item-details">Description: {{ item.description }}</p>
-          <p class="item-details">Date of Pickup: {{ item.dateOfPickup }}</p>
-          <p class="item-details">Time of Pickup: {{ item.timeOfPickup }}</p>
+          <ion-list>
+            <ion-item *ngFor="let item of slip.items" lines="full">
+              <ion-grid class="ion-no-padding">
+                <ion-row>
+                  <ion-col size="7">
+                    <h3>{{ item.name }}</h3>
+                  </ion-col>
+                  <ion-col size="5" class="ion-text-right">
+                    <p class="quantity">{{ item.quantity }}</p>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="6">
+                    <p class="category">{{ item.category }}</p>
+                  </ion-col>
+                  <ion-col size="6" class="ion-text-right">
+                    <p class="barcode">{{ item.barcode }}</p>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="12">
+                    <p class="description">{{ item.description }}</p>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="6">
+                    <p class="date">{{ item.dateOfPickup }}</p>
+                  </ion-col>
+                  <ion-col size="6" class="ion-text-right">
+                    <p class="time">{{ item.timeOfPickup }}</p>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-item>
+          </ion-list>
         </ion-card-content>
       </ion-card>
     </ion-item>

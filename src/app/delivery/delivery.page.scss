@@ -1,73 +1,78 @@
-ion-header {
-    ion-toolbar {
-      --background: #c24d2c; 
-      color:#000000;
-      text-align: center;
-      font-size: 27px;
-      font-weight: bold;
-    }
-  }
+ion-segment {
+  --background: var(--ion-color-primary);
+}
 
-  ion-segment-button{
-    font-size: 27px;
-      font-weight: bold;
-  }
- /* General Styles */
-ion-content {
-  --background: #f5f5f5;
+ion-segment-button {
+  --color: rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.6);
+  --color-checked: var(--ion-color-primary-contrast);
+  --indicator-color: var(--ion-color-primary-contrast);
+  text-transform: capitalize;
+}
+
+ion-card {
+  margin-bottom: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+ion-card-header {
+  padding: 16px;
+}
+
+ion-card-header ion-icon {
+  font-size: 24px;
+  margin-right: 8px;
 }
 
 ion-list {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 16px;
+  background: transparent;
 }
 
 ion-item {
-  --background: transparent;
-  --inner-padding-end: 0;
   --padding-start: 0;
+  --inner-padding-end: 0;
 }
 
-/* Slip Label */
-.slip-label {
-  font-family: 'Roboto', sans-serif;
-  font-size: 17px;
-  font-weight: bold;
-  margin-bottom: 12px;
-  color: #333;
+ion-grid {
+  padding: 0 16px;
 }
 
-/* Card Styles */
-ion-card {
-  margin-bottom: 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+ion-row {
+  margin-bottom: 8px;
 }
 
-.card-header {
-  background-color: #c24d2c;
-  color: #fff;
-  padding: 12px;
-  font-family: 'Montserrat', sans-serif;
+ion-col h3 {
+  margin: 0;
   font-size: 16px;
   font-weight: bold;
+  color: var(--ion-color-primary);
+  text-align: center;
 }
 
-ion-card-content {
-  padding: 16px;
-  font-family: 'Open Sans', sans-serif;
-  line-height: 1.6;
+ion-col p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ion-color-medium);
+  text-align: center;
 }
 
-.item-details {
-  margin-bottom: 8px;
-  color: #555;
+.quantity {
+  font-weight: bold;
 }
 
-/* Responsive Styles */
-@media (max-width: 576px) {
-  ion-card-content {
-    font-size: 14px;
-  }
+.category {
+  text-transform: capitalize;
+}
+
+.barcode {
+  font-family: monospace;
+}
+
+.description {
+  color: var(--ion-color-dark);
+  text-align: center;
+}
+
+.date,
+.time {
+  font-weight: 500;
 }

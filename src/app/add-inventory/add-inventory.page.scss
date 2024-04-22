@@ -167,9 +167,8 @@ ion-datetime .datetime-text {
 }
 
 
-ion-header {
-  ion-toolbar {
-    --background: #c24d2c; 
-    color:#fff;
-  }
+ion-toolbar {
+  --background: #c24d2c; 
+  color:#fff;
+  text-align: center;
 }

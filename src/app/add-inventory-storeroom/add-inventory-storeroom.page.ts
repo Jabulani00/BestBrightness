@@ -34,6 +34,7 @@ export class AddInventoryStoreroomPage implements OnInit {
   currentTime: string;
   phone:any;
   Cumpany:any;
+  sizeProduct:any;
   pickersDetailsEmail:any;
   timestamp: string;
 
@@ -130,6 +131,7 @@ showCard() {
       const productData:any = querySnapshot.docs[0].data();
       this.itemName = productData.name;
       this.itemCategory = productData.category;
+      this.sizeProduct = productData.sizeProduct;
       this.itemDescription = productData.description;
       this.imageUrl=productData.imageUrl;
    
@@ -181,6 +183,7 @@ showCard() {
         location:"storeroom",
         pickersDetailsEmail:this.pickersDetailsEmail,
         phone :this.phone,
+        sizeProduct:this.sizeProduct,
         Cumpany:this.Cumpany
       };
 
@@ -203,6 +206,7 @@ showCard() {
           name: this.itemName,
           category: this.itemCategory,
           description: this.itemDescription,
+          sizeProduct:this.sizeProduct,
           imageUrl: this.imageUrl || '',
           quantity: (productData.quantity + this.itemQuantity)
          });
@@ -274,168 +278,161 @@ showCard() {
 
 
   async generateSlip() {
-    if(!this.cart.length){
-
-      return
+    if (!this.cart.length) {
+        return;
     }
+
     const loader = await this.loadingController.create({
-      message: 'Generating Slip...',
+        message: 'Generating Slip...',
     });
     await loader.present();
-  console.log("data",this.cart)
+
     try {
-  
-      // Create a slip document in Firestore
-      const slipData = {
-        date: this.timestamp,
-        location:"storeroom",
-       // company:this.company,
-        pickersDetailsEmail:this.pickersDetailsEmail,
-       //pickersDetailsPhone:this.pickersDetailsPhone,
-        items: this.cart.map(item => ({
-          name: item.name,
-          quantity: item.quantity,
-          category: item.category,
-          description: item.description,
-          imageUrl: item.imageUrl,
-          pickersDetails: item.pickersDetails,
-          dateOfPickup: item.dateOfPickup,
-          timeOfPickup: item.timeOfPickup,
-          barcode: item.barcode,
-          pickersDetailsEmail:this.pickersDetailsEmail,
-//pickersDetailsPhone:this.pickersDetailsPhone,
-         
-        })),
-      };
-     // await this.firestore.collection('slips').add(slipData);
-      pdfMake.vfs = pdfFonts.pdfMake.vfs;
-     // Calculate column widths based on content length
+        const slipData = {
+            date: new Date(),
+            items: this.cart.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                category: item.category,
+                description: item.description,
+                imageUrl: item.imageUrl,
+                pickersDetails: item.pickersDetails,
+                dateOfPickup: item.dateOfPickup,
+                timeOfPickup: item.timeOfPickup,
+                barcode: item.barcode,
+                phone: item.phone,
+                Cumpany: item.Cumpany,
+                pickersDetailsEmail: this.pickersDetailsEmail,
+                sizeProduct: item.sizeProduct,
+            })),
+        };
 
+        pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
-// Define PDF content
-// Define PDF content
-const docDefinition = {
-  content: [
-    {
-      text: 'BEST BRIGHT', // Adding the company name to the header
-      style: 'companyName'
-    },
-    {
-      text: 'Invoice',
-      style: 'header'
-    },
-    {
-      text: `Date: ${new Date().toLocaleDateString()}`,
-      style: 'subheader'
-    },
-    {
-      text: `Date: ${slipData.pickersDetailsEmail}`,
-      style: 'subheader'
-    },
-    // Iterate over each item in the cart and create a simplified slip layout
-    ...this.cart.flatMap((item, index) => [
-      {
-        columns: [
-          // Item details
-          {
-            width: 'auto',
-            text: [
-              { text: 'Name: ', bold: true },
-              item.name,
-              '\n',
-              { text: 'Category: ', bold: true },
-              item.category,
-              '\n',
-              { text: 'Description: ', bold: true },
-              item.description,
-              '\n',
-              { text: 'Quantity: ', bold: true },
-              item.quantity.toString(),
-              '\n',
-              { text: 'Picker\'s Details: ', bold: true },
-              item.pickersDetails,
-              '\n',
-              { text: 'Barcode: ', bold: true },
-              item.barcode,
-            ]
-          }
-        ],
-        margin: [0, 10] // Add some margin between each item
-      },
-      // Add a separator between items, except for the last item
-      index < this.cart.length - 1 ? { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 595, y2: 5, lineWidth: 1 }] } : null
-    ])
-  ],
-  styles: {
-    header: {
-      fontSize: 24,
-      bold: true,
-      margin: [0, 0, 0, 10],
-      
-      color: '#4caf50' // Green color for the header
-    },
-    subheader: {
-      fontSize: 14,
-      bold: true,
-      margin: [0, 10, 0, 10],
-   
-    },
-    companyName: { // Style for the company name
-      fontSize: 28,
-      bold: true,
-      margin: [0, 0, 0, 2], // Adjust margin to separate company name from header
-      color: '#ff5722' // Deep orange color for the company name
+        const docDefinition = {
+            content: [
+                {
+                    text: 'BEST BRIGHTNESS',
+                    style: 'companyName'
+                },
+                {
+                    text: 'INCOMING STOCK SLIP',
+                    style: 'header'
+                },
+                {
+                    text: `Date: ${new Date().toLocaleDateString()}`,
+                    style: 'subheader'
+                },
+                ...this.cart.flatMap((item, index) => [
+                    {
+                        canvas: [
+                            {
+                                type: 'rect',
+                                x: 0,
+                                y: 0,
+                                w: 515,
+                                h: 30,
+                                r: 3,
+                                fillColor: index % 2 === 0 ? '#c24d2c' : null,
+                                lineWidth: 1,
+                                lineColor: '#c24d2c'
+                            }
+                        ],
+                        margin: [0, 10]
+                    },
+                    {
+                        columns: [
+                            {
+                                width: 'auto',
+                                text: [
+                                    { text: 'Name: ', bold: true },
+                                    item.name,
+                                    '\n',
+                                    { text: 'Category: ', bold: true },
+                                    item.category,
+                                    '\n',
+                                    { text: 'Description: ', bold: true },
+                                    item.description,
+                                    '\n',
+                                    { text: 'Quantity: ', bold: true },
+                                    item.quantity.toString(),
+                                    '\n',
+                                    { text: 'Size: ', bold: true },
+                                    item.sizeProduct,
+                                    '\n',
+                                    { text: 'Deliver Name: ', bold: true },
+                                    item.pickersDetails,
+                                    '\n',
+                                    { text: 'Delivery Company: ', bold: true },
+                                    item.Cumpany,
+                                    '\n',
+                                    { text: 'Phone: ', bold: true },
+                                    item.Phone,
+                                    '\n',
+                                    { text: 'Barcode: ', bold: true },
+                                    item.barcode,
+                                ]
+                            }
+                        ],
+                        margin: [10, 10]
+                    }
+                ])
+            ],
+            styles: {
+                header: {
+                    fontSize: 28,
+                    bold: true,
+                    margin: [0, 0, 0, 10],
+                    alignment: 'center',
+                    color: '#c24d2c',
+                },
+                subheader: {
+                    fontSize: 16,
+                    bold: true,
+                    margin: [0, 10, 0, 10],
+                    alignment: 'center',
+                },
+                companyName: {
+                    fontSize: 36,
+                    bold: true,
+                    margin: [0, 0, 0, 20],
+                    alignment: 'center',
+                    color: '#c24d2c',
+                }
+            }
+        };
+
+        const pdfDoc = await pdfMake.createPdf(docDefinition);
+
+        pdfDoc.getBase64(async (data: string) => {
+            try {
+                const fileName = `bestBrightness/${Date.now().toLocaleString()}_storeroom.pdf`;
+                const result = await Filesystem.writeFile({
+                    path: fileName,
+                    data: data,
+                    directory: Directory.Documents,
+                    recursive: true
+                });
+
+                const options: FileOpenerOptions = {
+                    filePath: `${result.uri}`,
+                    contentType: 'application/pdf',
+                    openWithDefault: true,
+                };
+
+                await FileOpener.open(options);
+                loader.dismiss();
+                this.cart = [];
+            } catch (error) {
+                loader.dismiss();
+                console.error('Error saving or opening PDF:', error);
+            }
+        });
+    } catch (error) {
+        loader.dismiss();
+        console.error('Error generating slip:', error);
     }
-  }
-};
-
-
-
-   
-const pdfDoc =await pdfMake.createPdf(docDefinition).open();
-return
-// Generate the PDF as base64 data
-pdfDoc.getBase64(async (data:any) => {
-  // Save the PDF file locally on the device
-  try {
-    // Generate a random file name for the PDF
-  const fileName = `bestBrightness/${Date.now().toLocaleString}_storeroom.pdf.pdf`;
-
-    // Write the PDF data to the device's data directory
-   const result= await Filesystem.writeFile({
-      path: fileName,
-      data: data,
-      directory: Directory.Documents,
-      recursive:true
-    });
-   // await FileOpener.open(`${Result.uri}`,'application/pdf');
-    // Define options for opening the PDF file
-    const options: FileOpenerOptions = {
-      filePath: `${result.uri}`,
-      contentType: 'application/pdf', // Mime type of the file
-      openWithDefault: true, // Open with the default application
-    };
-
-    // Use FileOpener to open the PDF file
-
-    await FileOpener.open(options);
-    loader.dismiss();
-    this.cart=[];
-  } catch (error:any) {
-    loader.dismiss();
-    alert(error.message +"  "+error);
-    console.error('Error saving or opening PDF:', error);
-  }
-});
-
-alert('poccesing the slip...');
-} catch (error) {
-loader.dismiss();
-console.error('Error generating slip:', error);
-// Handle error
 }
-}
-
 
 
 
@@ -446,6 +443,7 @@ clearFields() {
   this.itemQuantity = 0;
   this.pickersDetails = '';
   this.barcode = '';
+  this.sizeProduct='';
   this.imageBase64 = null;
   this.imageUrl = null;
 }
